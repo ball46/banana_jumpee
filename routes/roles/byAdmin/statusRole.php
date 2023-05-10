@@ -7,11 +7,12 @@ use Slim\App;
 return function (App $app) {
     $app->post('/role/status/change', function (Request $request, Response $response) {
         $data = json_decode($request->getBody());
+        $id = $data->id;
         $status = $data->status;
         $admin = $data->admin;
 
         if($admin == 1){
-            $sql = "UPDATE role SET R_status = '$status'";
+            $sql = "UPDATE role SET R_status = '$status' WHERE R_id = '$id'";
 
             $run = new Update($sql, $response);
             return $run->evaluate();
