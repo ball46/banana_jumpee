@@ -12,6 +12,10 @@ return function (App $app) {
     $routes($app);
 
     //call api faceID
-    $routes = require __DIR__ . '/roles/roles.php';
+    $routes = require __DIR__ . '/faceid/face.php';
+    $routes($app);
+
+    //call api date of work
+    $routes = require __DIR__ . '/dow/dow.php';
     $routes($app);
 };
