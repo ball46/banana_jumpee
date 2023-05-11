@@ -18,7 +18,8 @@ return function (App $app) {
                     VALUES ('$name', '$start_time', '$get_off_time', '$username')";
 
             $run = new Update($sql, $response);
-            return $run->evaluate();
+            $run->evaluate();
+            return $run->return();
         }else{
             $response->getBody()->write(json_encode("You are not admin"));
             return $response

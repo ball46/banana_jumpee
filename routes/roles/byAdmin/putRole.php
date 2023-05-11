@@ -19,7 +19,8 @@ return function (App $app) {
                    R_upd_by = '$username' WHERE R_id = '$id'";
 
             $run = new Update($sql, $response);
-            return $run->evaluate();
+            $run->evaluate();
+            return $run->return();
         }else{
             $response->getBody()->write(json_encode("You are not admin"));
             return $response

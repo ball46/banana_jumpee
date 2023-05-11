@@ -23,6 +23,7 @@ return function (App $app) {
                    M_upd_date = '$updateDate', M_role_id = '$roleId', M_admin = '$admin' WHERE M_email = '$old_email'";
 
         $run = new Update($sql, $response);
-        return $run->evaluate();
+        $run->evaluate();
+        return $run->return();
     });
 };

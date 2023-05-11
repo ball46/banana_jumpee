@@ -21,6 +21,7 @@ return function (App $app) {
             if ($result->M_status == 1) {
                 //create token
                 $payload = array(
+                    "id" => $result->M_id,
                     "admin" => $result->M_admin,
                     "email" => $result->M_email,
                     "username" => $result->M_username,

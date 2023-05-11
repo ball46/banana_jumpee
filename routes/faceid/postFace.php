@@ -21,6 +21,10 @@ return function (App $app) {
         $scan_time = date("H:i:s", $current_timestamp);
         $scan_timestamp = date("Y-m-d H:i:s", $current_timestamp);
 
+        $ver1 = "";
+        $ver2 = "";
+        $role_id = "";
+
         try {
             $db = new DB();
             $conn = $db->connect();
@@ -38,12 +42,15 @@ return function (App $app) {
             $sql = "SELECT * FROM member WHERE M_id = '$member_id'";
             $statement = $conn->query($sql);
             $data_member = $statement->fetch(PDO::FETCH_OBJ);
+
             if($data_member->M_profiling_v1){
                 echo "V1";
+                $sql = "SELECT * FROM memberdateworkv1 WHERE MD_member_id = '$member_id'";
             }else if($data_member->M_profiling_v2){
                 echo "V2";
+            }else{
+                $role_id = $data_member->M_role_id;
             }
-            $role_id = $data_member->M_role_id;
 
             //it has data in table or not
             if ($result !== false) {
@@ -139,7 +146,8 @@ return function (App $app) {
                             '$dayOfWeek','$scan_date', '$scan_time', '$scan_timestamp', '$timestamp', '$work')";
             }
             $run = new Update($sql, $response);
-            return $run->evaluate();
+            $run->evaluate();
+            return $run->return();
         } catch (PDOException $e) {
             $error = array(
                 "Message" => $e->getMessage()

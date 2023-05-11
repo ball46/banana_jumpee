@@ -12,6 +12,7 @@ return function (App $app) {
         $sql = "DELETE FROM member WHERE R_id = '$id'";
 
         $run = new Update($sql, $response);
-        return $run->evaluate();
+        $run->evaluate();
+        return $run->return();
     });
 };

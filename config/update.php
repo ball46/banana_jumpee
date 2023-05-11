@@ -6,6 +6,8 @@ class Update
 {
     private string $sql;
     private Response $response;
+    private $result;
+    private $error;
 
     public function __construct(string $sql, Response $response)
     {
@@ -13,26 +15,31 @@ class Update
         $this->response = $response;
     }
 
-    public function evaluate(): Response
+    public function evaluate(): void
     {
         try {
             $db = new DB();
             $conn = $db->connect();
 
             $statement = $conn->prepare($this->sql);
-            $result = $statement->execute();
+            $this->result = $statement->execute();
 
             $db = null;
-            $this->response->getBody()->write(json_encode($result));
+        } catch (PDOException $e) {
+            $this->error = array(
+                "Message" => $e->getMessage()
+            );
+        }
+    }
+
+    public function return(): Response{
+        try {
+            $this->response->getBody()->write(json_encode($this->result));
             return $this->response
                 ->withHeader('content-type', 'application/json')
                 ->withStatus(200);
-        } catch (PDOException $e) {
-            $error = array(
-                "Message" => $e->getMessage()
-            );
-
-            $this->response->getBody()->write(json_encode($error));
+        }catch (PDOException) {
+            $this->response->getBody()->write(json_encode($this->error));
             return $this->response
                 ->withHeader('content-type', 'application/json')
                 ->withStatus(500);

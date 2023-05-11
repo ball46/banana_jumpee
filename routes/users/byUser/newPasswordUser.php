@@ -14,6 +14,7 @@ return function (App $app) {
         $sql = "UPDATE member SET M_password = '$password' WHERE M_email = '$email'";
 
         $run = new Update($sql, $response);
-        return $run->evaluate();
+        $run->evaluate();
+        return $run->return();
     });
 };

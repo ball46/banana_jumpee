@@ -19,6 +19,7 @@ return function (App $app) {
                 VALUES ('$email', '$date_string', '$path')";
 
         $run = new Update($sql, $response);
-        return $run->evaluate();
+        $run->evaluate();
+        return $run->return();
     });
 };

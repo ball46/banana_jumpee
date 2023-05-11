@@ -34,6 +34,7 @@ return function (App $app) {
                         '$updateBy', '$roleId', '$admin')";
 
         $run = new Update($sql, $response);
-        return $run->evaluate();
+        $run->evaluate();
+        return $run->return();
     });
 };

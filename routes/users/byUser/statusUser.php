@@ -13,6 +13,7 @@ return function (App $app) {
         $sql = "UPDATE member SET M_status = '$status' WHERE M_email = '$email'";
 
         $run = new Update($sql, $response);
-        return $run->evaluate();
+        $run->evaluate();
+        return $run->return();
     });
 };
