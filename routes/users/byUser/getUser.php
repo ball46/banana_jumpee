@@ -46,13 +46,13 @@ return function (App $app) {
                 $jwt = JWT::encode($payload, "my_secret_key", 'HS256');
 
                 $db = null;
-                $response->getBody()->write(json_encode($jwt));
-
                 if (password_verify($password, $result->M_password)) {
+                    $response->getBody()->write(json_encode($jwt));
                     return $response
                         ->withHeader('content-type', 'application/json')
                         ->withStatus(200);
                 } else {
+                    $response->getBody()->write(json_encode("password is not correct"));
                     return $response
                         ->withHeader('content-type', 'application/json')
                         ->withStatus(401);

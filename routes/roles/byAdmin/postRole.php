@@ -13,7 +13,7 @@ return function (App $app) {
         $username = $data->username;
         $admin = $data->admin;
 
-        if($admin == 1){
+        if($admin){
             $sql = "INSERT INTO role (R_name, R_start_work, R_get_off_work, R_upd_by) 
                     VALUES ('$name', '$start_time', '$get_off_time', '$username')";
 

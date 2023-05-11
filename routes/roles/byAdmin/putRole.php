@@ -5,7 +5,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->post('/role/update', function (Request $request, Response $response) {
+    $app->put('/role/update', function (Request $request, Response $response) {
         $data = json_decode($request->getBody());
         $id = $data->id;
         $name = $data->role_name;
@@ -14,7 +14,7 @@ return function (App $app) {
         $username = $data->username;
         $admin = $data->admin;
 
-        if($admin == 1){
+        if($admin){
             $sql = "UPDATE role SET R_name = '$name', R_start_work = '$start_time', R_get_off_work = '$get_off_time', 
                    R_upd_by = '$username' WHERE R_id = '$id'";
 

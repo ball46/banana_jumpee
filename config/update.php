@@ -6,8 +6,9 @@ class Update
 {
     private string $sql;
     private Response $response;
-    private $result;
-    private $error;
+    private mixed $result = null; // Initialize the $result property
+    private mixed $error;
+    private int $count = -1;
 
     public function __construct(string $sql, Response $response)
     {
@@ -23,6 +24,7 @@ class Update
 
             $statement = $conn->prepare($this->sql);
             $this->result = $statement->execute();
+            $this->count = $statement->rowCount();
 
             $db = null;
         } catch (PDOException $e) {
@@ -32,13 +34,21 @@ class Update
         }
     }
 
-    public function return(): Response{
+    public function return(): Response
+    {
         try {
-            $this->response->getBody()->write(json_encode($this->result));
-            return $this->response
-                ->withHeader('content-type', 'application/json')
-                ->withStatus(200);
-        }catch (PDOException) {
+            if ($this->count != 0) {
+                $this->response->getBody()->write(json_encode($this->result));
+                return $this->response
+                    ->withHeader('content-type', 'application/json')
+                    ->withStatus(200);
+            } else {
+                $this->response->getBody()->write(json_encode("SQL not found"));
+                return $this->response
+                    ->withHeader('content-type', 'application/json')
+                    ->withStatus(404);
+            }
+        } catch (PDOException) {
             $this->response->getBody()->write(json_encode($this->error));
             return $this->response
                 ->withHeader('content-type', 'application/json')

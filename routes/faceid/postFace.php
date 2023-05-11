@@ -58,7 +58,7 @@ return function (App $app) {
                 $last_date = DateTime::createFromFormat('Y-m-d', $result->F_date);
                 $last_time = strtotime($result->F_time);
 
-                $date_last = new DateTime($last_time);
+                $date_last = new DateTime($last_date);
                 $interval = $date_last->diff($date_now);
                 $period = $interval->days;
 
@@ -72,6 +72,7 @@ return function (App $app) {
                     $start_work = strtotime($data_role->R_start_work);
                     $get_off_work = strtotime($data_role->R_get_off_work);
 
+                    //delete
                     if (!($period <= 1 || ($result->F_date_name == "Sat" && date('D') == "Mon"))) {
                         $datesBetween = array();
                         $currentDate = clone $date_last;
@@ -92,6 +93,7 @@ return function (App $app) {
                             $statement_absent->execute();
                         }
                     }
+                    //
                     $work = $scan_time <= $start_work ? "normal" :
                         ($scan_time <= $get_off_work ? "late" : "absent");
                     $dayOfWeek = $date_now->format('D');

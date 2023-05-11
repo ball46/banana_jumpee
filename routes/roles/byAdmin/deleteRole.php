@@ -8,11 +8,19 @@ return function (App $app) {
     $app->delete('/role/delete', function (Request $request, Response $response) {
         $data = json_decode($request->getBody());
         $id = $data->id;
+        $admin = $data->admin;
 
-        $sql = "DELETE FROM member WHERE R_id = '$id'";
+        if($admin){
+            $sql = "DELETE FROM role WHERE R_id = '$id'";
 
-        $run = new Update($sql, $response);
-        $run->evaluate();
-        return $run->return();
+            $run = new Update($sql, $response);
+            $run->evaluate();
+            return $run->return();
+        }else{
+            $response->getBody()->write(json_encode("You are not admin"));
+            return $response
+                ->withHeader('content-type', 'application/json')
+                ->withStatus(403);
+        }
     });
 };
