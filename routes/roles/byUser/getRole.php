@@ -10,6 +10,7 @@ return function (App $app) {
         $sql = "SELECT * FROM role WHERE R_id = '$id'";
 
         $run = new Get($sql, $response);
-        return $run->evaluate();
+        $run->evaluate();
+        return $run->return();
     });
 };

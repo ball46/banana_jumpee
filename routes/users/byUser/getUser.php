@@ -9,14 +9,18 @@ return function (App $app) {
     $app->get('/user/login/{email}/{password}', function (Request $request, Response $response, array $args) {
         $email = $args['email'];
         $password = $args['password'];
-        $sql = "SELECT * FROM member WHERE M_email = '$email'";
 
         try {
-            $db = new DB();
-            $conn = $db->connect();
-
-            $statement = $conn->query($sql);
-            $result = $statement->fetch(PDO::FETCH_OBJ);
+            $sql = "SELECT * FROM member WHERE M_email = '$email'";
+            $run = new Get($sql, $response);
+            $run->evaluate();
+            if($run->getterCount() == 0){
+                $response->getBody()->write(json_encode("SQL not found"));
+                return $response
+                    ->withHeader('content-type', 'application/json')
+                    ->withStatus(404);
+            }
+            $result = $run->getterResult();
 
             if ($result->M_status == 1) {
                 //create token
@@ -40,12 +44,11 @@ return function (App $app) {
                 $sql = "INSERT INTO loginlog (L_email_member, L_time_login, L_path) 
                     VALUES ('$result->M_email', '$date_string', '$path')";
 
-                $statement = $conn->prepare($sql);
-                $statement->execute();
+                $run = new Update($sql, $response);
+                $run->evaluate();
 
                 $jwt = JWT::encode($payload, "my_secret_key", 'HS256');
 
-                $db = null;
                 if (password_verify($password, $result->M_password)) {
                     $response->getBody()->write(json_encode($jwt));
                     return $response
