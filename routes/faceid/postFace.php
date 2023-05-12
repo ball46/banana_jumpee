@@ -12,7 +12,7 @@ return function (App $app) {
         $temperature = $data->temperature;
         $device_ip = $data->device_ip;
         $device_key = $data->device_key;
-        $timestamp = $data->timestamp;
+        $timestamp = $data->timestamp;//this is timestamp for the device
 
         //create time by php
         date_default_timezone_set('Asia/Bangkok');
@@ -21,132 +21,193 @@ return function (App $app) {
         $scan_time = date("H:i:s", $current_timestamp);
         $scan_timestamp = date("Y-m-d H:i:s", $current_timestamp);
 
-        $ver1 = "";
-        $ver2 = "";
-        $role_id = "";
-
         try {
-            $db = new DB();
-            $conn = $db->connect();
-
             //this fetch last data to compare now data
             $sql = "SELECT * FROM faceid WHERE F_member_id = '$member_id' ORDER BY F_id DESC LIMIT 1";
-            $statement = $conn->query($sql);
-            $result = $statement->fetch(PDO::FETCH_OBJ);
+            $run = new Get($sql, $response);
+            $run->evaluate();
+            $data_history = $run->getterResult();
+            $have_or_not = $run->getterCount();
 
-            $scan_date = DateTime::createFromFormat('Y-m-d', $scan_date);
-            $scan_time = strtotime($scan_time);
-            $date_now = new DateTime($scan_time);
+            //get date time for face id history
+            $last_date = date("Y-m-d", $data_history->F_date);
 
-            //this fetch to bring role id by member table
+            //this fetch to check profiling and bring role id by member table
             $sql = "SELECT * FROM member WHERE M_id = '$member_id'";
-            $statement = $conn->query($sql);
-            $data_member = $statement->fetch(PDO::FETCH_OBJ);
+            $run = new Get($sql, $response);
+            $run->evaluate();
+            $data_member = $run->getterResult();
 
-            if($data_member->M_profiling_v1){
-                echo "V1";
-                $sql = "SELECT * FROM memberdateworkv1 WHERE MD_member_id = '$member_id'";
-            }else if($data_member->M_profiling_v2){
-                echo "V2";
-            }else{
-                $role_id = $data_member->M_role_id;
+            $date_now = new DateTime($scan_date);
+            $day_name = $date_now->format('D');//Mon, Tue, Wed, Thu, Fri, Sat, Sun
+            $scan_time_ver_check = strtotime($scan_time);
+
+            //this to get data about role id
+            $role_id = $data_member->M_role_id;
+            $sql = "SELECT * FROM role WHERE R_id = '$role_id'";
+            $run = new Get($sql, $response);
+            $run->evaluate();
+            $data_role = $run->getterResult();
+            //these are time to check work time
+            $start_work_role = strtotime($data_role->R_start_work);
+            $get_off_work_role = strtotime($data_role->R_get_off_work);
+
+            $work = "";
+            $in_out = 1;
+            $data_date_work = "";
+            $start_work_profiling = "";
+            $end_work_profiling = "";
+
+            if($data_member->M_profiling){
+                //to get profiling information
+                $sql = "SELECT * FROM datework WHERE D_member_id = '$member_id' AND D_status = '1'";
+                $run = new Get($sql, $response);
+                $run->evaluate();
+                $data_date_work = $run->getterResult();
+                $start_work_profiling = strtotime($data_date_work->D_start_time_work);
+                $end_work_profiling = strtotime($data_date_work->D_end_time_work);
             }
 
-            //it has data in table or not
-            if ($result !== false) {
-                //role path
-                $last_date = DateTime::createFromFormat('Y-m-d', $result->F_date);
-                $last_time = strtotime($result->F_time);
-
-                $date_last = new DateTime($last_date);
-                $interval = $date_last->diff($date_now);
-                $period = $interval->days;
-
-                if ($scan_date > $last_date) {
-                    $in_out = 1;
-
-                    //this fetch data about role id
-                    $sql = "SELECT * FROM role WHERE R_id = '$role_id'";
-                    $statement = $conn->query($sql);
-                    $data_role = $statement->fetch(PDO::FETCH_OBJ);
-                    $start_work = strtotime($data_role->R_start_work);
-                    $get_off_work = strtotime($data_role->R_get_off_work);
-
-                    //delete
-                    if (!($period <= 1 || ($result->F_date_name == "Sat" && date('D') == "Mon"))) {
-                        $datesBetween = array();
-                        $currentDate = clone $date_last;
-                        while ($currentDate < $date_now) {
-                            $currentDate->modify('+1 day');
-                            $datesBetween[] = $currentDate->format('Y-m-d');
-                        }
-                        array_pop($datesBetween);
-                        foreach ($datesBetween as $date) {
-                            $dayOfWeek = $date->format('D');
-                            if ($dayOfWeek == "Sun") continue;
-                            $work = "absent";
-                            $sql = "INSERT INTO faceid (F_member_id, F_temperature, F_in_out, F_device_ip,
-                                    F_device_key, F_date_name, F_date, F_time, F_cr_date, F_timestamp_by_device, F_work) 
-                                    VALUES ('$member_id', '$temperature', '$in_out', '$device_ip', '$device_key',
-                                    '$dayOfWeek','$date', '$scan_time', '$scan_timestamp', '$timestamp', '$work')";
-                            $statement_absent = $conn->prepare($sql);
-                            $statement_absent->execute();
-                        }
+            if ($have_or_not) {
+                if ($data_member->M_profiling) {
+                    $count = 0;
+                    if ($data_date_work->D_choose_date_name) {
+                        $days = explode(" ", $data_date_work->D_date_name);
+                        $date = $day_name;
+                    } else {
+                        $days = explode(" ", $data_date_work->D_date_num);
+                        $date = date("d", $current_timestamp);
                     }
-                    //
-                    $work = $scan_time <= $start_work ? "normal" :
-                        ($scan_time <= $get_off_work ? "late" : "absent");
-                    $dayOfWeek = $date_now->format('D');
-                    $sql = "INSERT INTO faceid (F_member_id, F_temperature, F_in_out, F_device_ip,
-                            F_device_key, F_date_name, F_date, F_time, F_cr_date, F_timestamp_by_device, F_work) 
-                            VALUES ('$member_id', '$temperature', '$in_out', '$device_ip', '$device_key',
-                            '$dayOfWeek','$scan_date', '$scan_time', '$scan_timestamp', '$timestamp', '$work')";
-                } else {
-                    if ($scan_time >= $last_time) {
-                        //it has 2 case get off work or scan again
-                        $in_out = 0;
+                    $date_have = count($days);
+                    foreach ($days as $day) {
+                        if ($day == $date) {
+                            if ($scan_date > $last_date) {
+                                $work = $scan_time_ver_check <= $start_work_profiling ? "normal" :
+                                    ($scan_time_ver_check <= $end_work_profiling ? "late" : "absent");
 
-                        //this fetch data about role id
-                        $sql = "SELECT * FROM role WHERE R_id = '$role_id'";
-                        $statement = $conn->query($sql);
-                        $data_role = $statement->fetch(PDO::FETCH_OBJ);
-                        $get_off_work = strtotime($data_role->R_get_off_work);
+                                $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                    $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                                $cal->first_scan();
+                            } else {
+                                $in_out = 0;
+                                $work = $scan_time_ver_check >= $end_work_profiling ? "normal" : "saot";
 
-                        $work = $scan_time >= $get_off_work ? "normal" : "saot";
-
-                        if ($result->F_in_out == 1) {
-                            $dayOfWeek = $date_now->format('D');
-                            $sql = "INSERT INTO faceid (F_member_id, F_temperature, F_in_out, F_device_ip,
-                                    F_device_key, F_date_name, F_date, F_time, F_cr_date, F_timestamp_by_device, F_work) 
-                                    VALUES ('$member_id', '$temperature', '$in_out', '$device_ip', '$device_key',
-                                    '$dayOfWeek','$scan_date', '$scan_time', '$scan_timestamp', '$timestamp', '$work')";
+                                if ($data_history->F_in_out) {
+                                    $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
+                                        $day_name, $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                                    $cal->first_scan();
+                                } else {
+                                    $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
+                                        $day_name, $scan_date, $scan_time, $scan_timestamp, $timestamp, $work,
+                                        $data_history->F_id);
+                                    $cal->scan_again();
+                                }
+                            }
+                            $sql = $cal->getterSQL();
                         } else {
-                            $sql = "UPDATE faceid SET F_temperature = '$temperature', F_in_out = '$in_out', 
-                                    F_device_ip = '$device_ip', F_device_key = '$device_key', F_time = '$scan_time',
-                                    F_cr_date = '$scan_timestamp', F_timestamp_by_device = '$timestamp', 
-                                    F_work = '$work' WHERE F_id = '$result->F_id'";
+                            $count++;
                         }
-
                     }
+                    //go to role version
+                    if ($count == $date_have) {
+                        if ($scan_date > $last_date) {
+                            $work = $scan_time_ver_check <= $start_work_role ? "normal" :
+                                ($scan_time_ver_check <= $get_off_work_role ? "late" : "absent");
+                            $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                            $cal->first_scan();
+                        } else {
+                            $in_out = 0;
+                            $work = $scan_time_ver_check >= $get_off_work_role ? "normal" : "saot";
+
+                            if ($data_history->F_in_out) {
+                                $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                    $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                                $cal->first_scan();
+                            } else {
+                                $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                    $scan_date, $scan_time, $scan_timestamp, $timestamp, $work, $data_history->F_id);
+                                $cal->scan_again();
+                            }
+                        }
+                        $sql = $cal->getterSQL();
+                    }
+                } else {
+                    if ($scan_date > $last_date) {
+                        //in this case most likely go to office to work
+                        $work = $scan_time_ver_check <= $start_work_role ? "normal" :
+                            ($scan_time_ver_check <= $get_off_work_role ? "late" : "absent");
+                        $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                            $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                        $cal->first_scan();
+                    } else {
+                        //in this case have 2 possible ine way is scan after checkin and another way is scan again
+                        $in_out = 0;
+                        $work = $scan_time_ver_check >= $get_off_work_role ? "normal" : "saot";
+
+                        if ($data_history->F_in_out) {
+                            $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                            $cal->first_scan();
+                        } else {
+                            $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                $scan_date, $scan_time, $scan_timestamp, $timestamp, $work, $data_history->F_id);
+                            $cal->scan_again();
+                        }
+                    }
+                    $sql = $cal->getterSQL();
                 }
             } else {
-                $in_out = 1;
+                if ($data_member->M_profiling) {
+                    $count = 0;
+                    if ($data_date_work->D_choose_date_name) {
+                        $days = explode(" ", $data_date_work->D_date_name);
+                        $date = $day_name;
+                    } else {
+                        $days = explode(" ", $data_date_work->D_date_num);
+                        $date = date("d", $current_timestamp);
+                    }
+                    $date_have = count($days);
+                    foreach ($days as $day) {
+                        if ($day == $date) {
+                            $work = $scan_time_ver_check <= $start_work_profiling ? "normal" :
+                                ($scan_time_ver_check <= $end_work_profiling ? "late" : "absent");
 
-                //this fetch data about role id
-                $sql = "SELECT * FROM role WHERE R_id = '$role_id'";
-                $statement = $conn->query($sql);
-                $data_role = $statement->fetch(PDO::FETCH_OBJ);
-                $start_work = strtotime($data_role->R_start_work);
-                $get_off_work = strtotime($data_role->R_get_off_work);
+                            $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                            $cal->first_scan();
 
-                $work = $scan_time <= $start_work ? "normal" :
-                    ($scan_time <= $get_off_work ? "late" : "absent");
-                $dayOfWeek = $date_now->format('D');
-                $sql = "INSERT INTO faceid (F_member_id, F_temperature, F_in_out, F_device_ip,
-                            F_device_key, F_date_name, F_date, F_time, F_cr_date, F_timestamp_by_device, F_work) 
-                            VALUES ('$member_id', '$temperature', '$in_out', '$device_ip', '$device_key',
-                            '$dayOfWeek','$scan_date', '$scan_time', '$scan_timestamp', '$timestamp', '$work')";
+                            $sql = $cal->getterSQL();
+                        } else {
+                            $count++;
+                        }
+                    }
+                    //go to role version
+                    if ($count == $date_have) {
+                        $work = $scan_time_ver_check <= $start_work_role ? "normal" :
+                            ($scan_time_ver_check <= $get_off_work_role ? "late" : "absent");
+                        $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                            $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                        $cal->first_scan();
+                        $sql = $cal->getterSQL();
+                    }
+                } else {
+                    $work = $scan_time_ver_check <= $start_work_role ? "normal" :
+                        ($scan_time_ver_check <= $get_off_work_role ? "late" : "absent");
+
+                    $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                        $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                    $cal->first_scan();
+                    $sql = $cal->getterSQL();
+                }
             }
+            $sql_log = "INSERT INTO faceidlog (F_member_id, F_temperature, F_in_out, F_device_ip,F_device_key, 
+                        F_date_name, F_date, F_time, F_cr_date, F_timestamp_by_device, F_work)
+                        VALUES ('$member_id', '$temperature', '$in_out', '$device_ip', '$device_key','$day_name',
+                        '$scan_date', '$scan_time', '$scan_timestamp', '$timestamp', '$work')";
+            $run = new Update($sql_log, $response);
+            $run->evaluate();
+
             $run = new Update($sql, $response);
             $run->evaluate();
             return $run->return();
