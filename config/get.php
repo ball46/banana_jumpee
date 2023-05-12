@@ -55,7 +55,9 @@ class Get
                 ->withStatus(500);
         }
     }
-    public function getterCount(): int {
+
+    public function getterCount(): int
+    {
         return $this->count;
     }
 

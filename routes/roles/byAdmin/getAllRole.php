@@ -9,6 +9,7 @@ return function (App $app) {
         $sql = "SELECT * FROM role";
 
         $run = new GetAll($sql, $response);
-        return $run->evaluate();
+        $run->evaluate();
+        return $run->return();
     });
 };
