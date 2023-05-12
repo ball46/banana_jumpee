@@ -3,7 +3,7 @@
 use Slim\App;
 
 return function (App $app) {
-    //date of work version 1 (version choose the date of week)
+    //date of work
     $routes = require __DIR__ . '/postDateWork.php';
     $routes($app);
 };
