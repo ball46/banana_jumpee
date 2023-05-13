@@ -18,4 +18,8 @@ return function (App $app) {
     //call api date of work
     $routes = require __DIR__ . '/dow/dow.php';
     $routes($app);
+
+    //call api image member
+    $routes = require __DIR__ . '/image/image.php';
+    $routes($app);
 };
