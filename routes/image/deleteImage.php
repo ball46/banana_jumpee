@@ -5,17 +5,16 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->post('/image/default/add', function (Request $request, Response $response){
+    $app->put('/image/delete', function (Request $request, Response $response){
         $data = json_decode($request->getBody());
-        $email = $data->email;
+        $member_id = $data->member_id;
 
-        $sql = "SELECT * FROM member WHERE M_email = '$email'";
+        $sql = "SELECT * FROM memberimage WHERE MI_member_id = '$member_id'";
         $run = new Get($sql, $response);
         $run->evaluate();
         $result = $run->getterResult();
 
-        $sql = "INSERT INTO memberimage (MI_member_id, MI_image_name) 
-                VALUES ('$result->M_id', 'default_image.png')";
+        $sql = "UPDATE memberimage SET MI_image_name = 'default_image.png' WHERE MI_id = '$result->MI_id'";
         $run = new Update($sql, $response);
         $run->evaluate();
         return $run->return();
