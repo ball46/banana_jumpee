@@ -29,7 +29,7 @@ return function (App $app) {
         $have_or_not = $run->getterCount();
 
         //get date time for face id history
-        $last_date = date("Y-m-d", $data_history->F_date);
+        $last_date = date("Y-m-d", strtotime($data_history->F_date));
 
         //this fetch to check profiling and bring role id by member table
         $sql = "SELECT * FROM member WHERE M_id = '$member_id'";

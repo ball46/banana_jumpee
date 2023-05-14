@@ -16,6 +16,7 @@ return function (App $app) {
         $run->evaluate();
 
         if ($run->getterCount() != 0) {
+            $count = 0;
             $result = $run->getterResult();
             foreach ($result as $row) {
                 $last_date = $row->D_end_date_work;//this is the last date of all old profiling
@@ -33,17 +34,25 @@ return function (App $app) {
                     $sql = "UPDATE datework SET D_status = '0' WHERE D_id = '$row->D_id'";
                     $run = new Update($sql, $response);
                     $run->evaluate();
+                } else {
+                    $count++;
                 }
+            }
+            if ($count == $run->getterCount()) {
+                $response->getBody()->write(json_encode("Not change status of profiling"));
+                return $response
+                    ->withHeader('content-type', 'application/json')
+                    ->withStatus(304);
             }
             $response->getBody()->write(json_encode(true));
             return $response
                 ->withHeader('content-type', 'application/json')
                 ->withStatus(200);
         } else {
-            $response->getBody()->write(json_encode("Not change status of profiling"));
+            $response->getBody()->write(json_encode("Not have profiling to change status"));
             return $response
                 ->withHeader('content-type', 'application/json')
-                ->withStatus(304);
+                ->withStatus(404);
         }
     });
 };

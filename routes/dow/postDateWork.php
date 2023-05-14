@@ -14,7 +14,7 @@ return function (App $app) {
         $end_time = $data->end_time;
         $date_name = $data->date_name;
         $choose_date_name = $data->choose_date_name;
-        $date_num = $data->date_choose;
+        $date_num = $data->date_num;
         $update_by = $data->update_by;
 
         $sql = "SELECT * FROM datework WHERE D_member_id = '$member_id' AND D_status = '1'";

@@ -18,7 +18,7 @@ class Work
 
     public function __construct(int $member_id, float $temperature, int $in_out, string $device_ip,
                                 string $device_key, string $day_name, string $scan_date, string $scan_time,
-                                string $scan_timestamp, string $timestamp, string $work, ?int $id = null)
+                                string $scan_timestamp, string $timestamp, string $work, ?int $id = 0)
     {
         $this->id = $id;
         $this->member_id = $member_id;
