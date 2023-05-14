@@ -17,44 +17,33 @@ return function (App $app) {
         $date_num = $data->date_choose;
         $update_by = $data->update_by;
 
-        try {
-            $sql = "SELECT * FROM datework WHERE D_member_id = '$member_id' AND D_status = '1'";
-            $run = new GetAll($sql, $response);
-            $run->evaluate();
-            if($run->getterCount() != 0) {
-                $result = $run->getterResult();
-                foreach ($result as $row) {
-                    $last_date = $row->D_end_date_work;//this is the last date of all old profiling
-                    if ($last_date > $start_date) {
-                        $response->getBody()->write(json_encode("new profiling is overlap old profiling"));
-                        return $response
-                            ->withHeader('content-type', 'application/json')
-                            ->withStatus(403);
-                    }
+        $sql = "SELECT * FROM datework WHERE D_member_id = '$member_id' AND D_status = '1'";
+        $run = new GetAll($sql, $response);
+        $run->evaluate();
+        if ($run->getterCount() != 0) {
+            $result = $run->getterResult();
+            foreach ($result as $row) {
+                $last_date = $row->D_end_date_work;//this is the last date of all old profiling
+                if ($last_date > $start_date) {
+                    $response->getBody()->write(json_encode("new profiling is overlap old profiling"));
+                    return $response
+                        ->withHeader('content-type', 'application/json')
+                        ->withStatus(403);
                 }
             }
+        }
 
-            $sql = "UPDATE member SET M_profiling = '1' WHERE M_id = '$member_id'";
-            $run = new Update($sql, $response);
-            $run->evaluate();
+        $sql = "UPDATE member SET M_profiling = '1' WHERE M_id = '$member_id'";
+        $run = new Update($sql, $response);
+        $run->evaluate();
 
-            $sql = "INSERT INTO datework (D_member_id, D_start_date_work, D_end_date_work, D_start_time_work, 
+        $sql = "INSERT INTO datework (D_member_id, D_start_date_work, D_end_date_work, D_start_time_work, 
                     D_end_time_work, D_date_name, D_choose_date_name, D_date_num, D_upd_by) 
                     VALUES ('$member_id', '$start_date', '$end_date', '$start_time', '$end_time', '$date_name', 
                             '$choose_date_name', '$date_num','$update_by')";
 
-            $run = new Update($sql, $response);
-            $run->evaluate();
-            return $run->return();
-        } catch (PDOException $e) {
-            $error = array(
-                "Message" => $e->getMessage()
-            );
-
-            $response->getBody()->write(json_encode($error));
-            return $response
-                ->withHeader('content-type', 'application/json')
-                ->withStatus(500);
-        }
+        $run = new Update($sql, $response);
+        $run->evaluate();
+        return $run->return();
     });
 };

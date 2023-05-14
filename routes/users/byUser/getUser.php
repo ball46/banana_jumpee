@@ -10,72 +10,61 @@ return function (App $app) {
         $email = $args['email'];
         $password = $args['password'];
 
-        try {
-            $sql = "SELECT * FROM member WHERE M_email = '$email'";
-            $run = new Get($sql, $response);
-            $run->evaluate();
-            if($run->getterCount() == 0){
-                $response->getBody()->write(json_encode("SQL not found"));
-                return $response
-                    ->withHeader('content-type', 'application/json')
-                    ->withStatus(404);
-            }
-            $result = $run->getterResult();
-
-            if ($result->M_status == 1) {
-                //create token
-                $payload = array(
-                    "id" => $result->M_id,
-                    "admin" => $result->M_admin,
-                    "email" => $result->M_email,
-                    "username" => $result->M_username,
-                    "display_name" => $result->M_display_name,
-                    "first_name" => $result->M_first_name,
-                    "last_name" => $result->M_last_name,
-                    "role_id" => $result->M_role_id,
-                );
-
-                date_default_timezone_set('Asia/Bangkok');
-                $current_timestamp = time();
-                $date_string = date("Y-m-d H:i:s", $current_timestamp);
-
-                $path = $_SERVER['HTTP_USER_AGENT'];
-
-                $sql = "INSERT INTO loginlog (L_email_member, L_time_login, L_path) 
-                    VALUES ('$result->M_email', '$date_string', '$path')";
-
-                $run = new Update($sql, $response);
-                $run->evaluate();
-
-                $jwt = JWT::encode($payload, "my_secret_key", 'HS256');
-
-                if (password_verify($password, $result->M_password)) {
-                    $response->getBody()->write(json_encode($jwt));
-                    return $response
-                        ->withHeader('content-type', 'application/json')
-                        ->withStatus(200);
-                } else {
-                    $response->getBody()->write(json_encode("password is not correct"));
-                    return $response
-                        ->withHeader('content-type', 'application/json')
-                        ->withStatus(401);
-                }
-            } else {
-                $response->getBody()->write(json_encode("This account is not authorized"));
-
-                return $response
-                    ->withHeader('content-type', 'application/json')
-                    ->withStatus(403);
-            }
-        } catch (PDOException $e) {
-            $error = array(
-                "Message" => $e->getMessage()
-            );
-
-            $response->getBody()->write(json_encode($error));
+        $sql = "SELECT * FROM member WHERE M_email = '$email'";
+        $run = new Get($sql, $response);
+        $run->evaluate();
+        if ($run->getterCount() == 0) {
+            $response->getBody()->write(json_encode("SQL not found"));
             return $response
                 ->withHeader('content-type', 'application/json')
-                ->withStatus(500);
+                ->withStatus(404);
+        }
+        $result = $run->getterResult();
+
+        if ($result->M_status == 1) {
+            //create token
+            $payload = array(
+                "id" => $result->M_id,
+                "admin" => $result->M_admin,
+                "email" => $result->M_email,
+                "username" => $result->M_username,
+                "display_name" => $result->M_display_name,
+                "first_name" => $result->M_first_name,
+                "last_name" => $result->M_last_name,
+                "role_id" => $result->M_role_id,
+            );
+
+            date_default_timezone_set('Asia/Bangkok');
+            $current_timestamp = time();
+            $date_string = date("Y-m-d H:i:s", $current_timestamp);
+
+            $path = $_SERVER['HTTP_USER_AGENT'];
+
+            $sql = "INSERT INTO loginlog (L_email_member, L_time_login, L_path) 
+                    VALUES ('$result->M_email', '$date_string', '$path')";
+
+            $run = new Update($sql, $response);
+            $run->evaluate();
+
+            $jwt = JWT::encode($payload, "my_secret_key", 'HS256');
+
+            if (password_verify($password, $result->M_password)) {
+                $response->getBody()->write(json_encode($jwt));
+                return $response
+                    ->withHeader('content-type', 'application/json')
+                    ->withStatus(200);
+            } else {
+                $response->getBody()->write(json_encode("password is not correct"));
+                return $response
+                    ->withHeader('content-type', 'application/json')
+                    ->withStatus(401);
+            }
+        } else {
+            $response->getBody()->write(json_encode("This account is not authorized"));
+
+            return $response
+                ->withHeader('content-type', 'application/json')
+                ->withStatus(403);
         }
     });
 };
