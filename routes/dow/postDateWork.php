@@ -17,6 +17,17 @@ return function (App $app) {
         $date_num = $data->date_num;
         $update_by = $data->update_by;
 
+        if(!$choose_date_name){
+            $start_month = explode("-", $start_date);
+            $end_month = explode("-", $end_date);
+            if($start_month[1] != $end_month[1]){
+                $response->getBody()->write(json_encode("choose date number must be in the same month."));
+                return $response
+                    ->withHeader('content-type', 'application/json')
+                    ->withStatus(400);
+            }
+        }
+
         $sql = "SELECT * FROM datework WHERE D_member_id = '$member_id' AND D_status = '1'";
         $run = new GetAll($sql, $response);
         $run->evaluate();
