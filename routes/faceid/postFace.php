@@ -107,17 +107,16 @@ return function (App $app) {
                         $count++;
                     }
                 }
-                //go to role version
+                //this is OT version
                 if ($count == $date_have) {
                     if ($scan_date > $last_date) {
-                        $work = $scan_time_ver_check <= $start_work_role ? "normal" :
-                            ($scan_time_ver_check <= $get_off_work_role ? "late" : "absent");
+                        $work = "OT";
                         $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
                             $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
                         $cal->first_scan();
                     } else {
                         $in_out = 0;
-                        $work = $scan_time_ver_check >= $get_off_work_role ? "normal" : "saot";
+                        $work = "OT";
 
                         if ($data_history->F_in_out) {
                             $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
@@ -181,10 +180,9 @@ return function (App $app) {
                         $count++;
                     }
                 }
-                //go to role version
+                //this is OT version
                 if ($count == $date_have) {
-                    $work = $scan_time_ver_check <= $start_work_role ? "normal" :
-                        ($scan_time_ver_check <= $get_off_work_role ? "late" : "absent");
+                    $work = "OT";
                     $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
                         $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
                     $cal->first_scan();
