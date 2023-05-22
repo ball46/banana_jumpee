@@ -34,7 +34,7 @@ return function (App $app) {
             }
         }
 
-        $sql = "UPDATE member SET M_profiling = '1' WHERE M_id = '$member_id'";
+        $sql = "UPDATE member SET M_leave = '1' WHERE M_id = '$member_id'";
         $run = new Update($sql, $response);
         $run->evaluate();
 

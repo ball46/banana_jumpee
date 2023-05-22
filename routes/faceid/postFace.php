@@ -28,9 +28,6 @@ return function (App $app) {
         $data_history = $run->getterResult();
         $have_or_not = $run->getterCount();
 
-        //get date time for face id history
-        $last_date = date("Y-m-d", strtotime($data_history->F_date));
-
         //this fetch to check profiling and bring role id by member table
         $sql = "SELECT * FROM member WHERE M_id = '$member_id'";
         $run = new Get($sql, $response);
@@ -56,6 +53,8 @@ return function (App $app) {
         $data_date_work = "";
         $start_work_profiling = "";
         $end_work_profiling = "";
+        $have_leave = 0;
+        $data_leave = "";
 
         if ($data_member->M_profiling) {
             //to get profiling information
@@ -67,56 +66,104 @@ return function (App $app) {
             $end_work_profiling = strtotime($data_date_work->D_end_time_work);
         }
 
-        if ($have_or_not) {
-            if ($data_member->M_profiling) {
-                $count = 0;
-                if ($data_date_work->D_choose_date_name) {
-                    $days = explode(" ", $data_date_work->D_date_name);
-                    $date = $day_name;
-                } else {
-                    $days = explode(" ", $data_date_work->D_date_num);
-                    $date = date("d", $current_timestamp);
+        if ($data_member->M_leave) {
+            $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id' AND V_status = '1'";
+            $run = new Get($sql, $response);
+            $run->evaluate();
+            $data_leave = $run->getterResult();
+            if ($data_leave->V_time_period != "all day") {
+                if ($scan_date >= $data_leave->V_start_date && $scan_date <= $data_leave->V_end_date) {
+                    $have_leave = 1;
+                    $work = "normal";
                 }
-                $date_have = count($days);
-                foreach ($days as $day) {
-                    if ($day == $date) {
-                        if ($scan_date > $last_date) {
-                            $work = $scan_time_ver_check <= $start_work_profiling ? "normal" :
-                                ($scan_time_ver_check <= $end_work_profiling ? "late" : "absent");
+            }
 
+        }
+
+        if ($have_leave) {
+            $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+            $cal->first_scan();
+            $sql = $cal->getterSQL();
+        } else {
+            if ($have_or_not) {
+                //get date time for face id history
+                $last_date = date("Y-m-d", strtotime($data_history->F_date));
+
+                if ($data_member->M_profiling) {
+                    $count = 0;
+                    if ($data_date_work->D_choose_date_name) {
+                        $days = explode(" ", $data_date_work->D_date_name);
+                        $date = $day_name;
+                    } else {
+                        $days = explode(" ", $data_date_work->D_date_num);
+                        $date = date("d", $current_timestamp);
+                    }
+                    $date_have = count($days);
+                    foreach ($days as $day) {
+                        if ($day == $date) {
+                            if ($scan_date > $last_date) {
+                                $work = $scan_time_ver_check <= $start_work_profiling ? "normal" :
+                                    ($scan_time_ver_check <= $end_work_profiling ? "late" : "absent");
+
+                                $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                    $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                                $cal->first_scan();
+                            } else {
+                                $in_out = 0;
+                                $work = $scan_time_ver_check >= $end_work_profiling ? "normal" : "saot";
+
+                                if ($data_history->F_in_out) {
+                                    $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
+                                        $day_name, $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                                    $cal->first_scan();
+                                } else {
+                                    $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
+                                        $day_name, $scan_date, $scan_time, $scan_timestamp, $timestamp, $work,
+                                        $data_history->F_id);
+                                    $cal->scan_again();
+                                }
+                            }
+                            $sql = $cal->getterSQL();
+                        } else {
+                            $count++;
+                        }
+                    }
+                    //this is OT version
+                    if ($count == $date_have) {
+                        if ($scan_date > $last_date) {
+                            $work = "OT";
                             $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
                                 $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
                             $cal->first_scan();
                         } else {
                             $in_out = 0;
-                            $work = $scan_time_ver_check >= $end_work_profiling ? "normal" : "saot";
+                            $work = "OT";
 
                             if ($data_history->F_in_out) {
-                                $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
-                                    $day_name, $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                                $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                    $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
                                 $cal->first_scan();
                             } else {
-                                $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
-                                    $day_name, $scan_date, $scan_time, $scan_timestamp, $timestamp, $work,
-                                    $data_history->F_id);
+                                $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                    $scan_date, $scan_time, $scan_timestamp, $timestamp, $work, $data_history->F_id);
                                 $cal->scan_again();
                             }
                         }
                         $sql = $cal->getterSQL();
-                    } else {
-                        $count++;
                     }
-                }
-                //this is OT version
-                if ($count == $date_have) {
+                } else {
                     if ($scan_date > $last_date) {
-                        $work = "OT";
+                        //in this case most likely go to office to work
+                        $work = $scan_time_ver_check <= $start_work_role ? "normal" :
+                            ($scan_time_ver_check <= $get_off_work_role ? "late" : "absent");
                         $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
                             $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
                         $cal->first_scan();
                     } else {
+                        //in this case have 2 possible ine way is scan after checkin and another way is scan again
                         $in_out = 0;
-                        $work = "OT";
+                        $work = $scan_time_ver_check >= $get_off_work_role ? "normal" : "saot";
 
                         if ($data_history->F_in_out) {
                             $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
@@ -131,71 +178,47 @@ return function (App $app) {
                     $sql = $cal->getterSQL();
                 }
             } else {
-                if ($scan_date > $last_date) {
-                    //in this case most likely go to office to work
+                if ($data_member->M_profiling) {
+                    $count = 0;
+                    if ($data_date_work->D_choose_date_name) {
+                        $days = explode(" ", $data_date_work->D_date_name);
+                        $date = $day_name;
+                    } else {
+                        $days = explode(" ", $data_date_work->D_date_num);
+                        $date = date("d", $current_timestamp);
+                    }
+                    $date_have = count($days);
+                    foreach ($days as $day) {
+                        if ($day == $date) {
+                            $work = $scan_time_ver_check <= $start_work_profiling ? "normal" :
+                                ($scan_time_ver_check <= $end_work_profiling ? "late" : "absent");
+
+                            $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                                $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                            $cal->first_scan();
+
+                            $sql = $cal->getterSQL();
+                        } else {
+                            $count++;
+                        }
+                    }
+                    //this is OT version
+                    if ($count == $date_have) {
+                        $work = "OT";
+                        $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
+                            $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
+                        $cal->first_scan();
+                        $sql = $cal->getterSQL();
+                    }
+                } else {
                     $work = $scan_time_ver_check <= $start_work_role ? "normal" :
                         ($scan_time_ver_check <= $get_off_work_role ? "late" : "absent");
-                    $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
-                        $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
-                    $cal->first_scan();
-                } else {
-                    //in this case have 2 possible ine way is scan after checkin and another way is scan again
-                    $in_out = 0;
-                    $work = $scan_time_ver_check >= $get_off_work_role ? "normal" : "saot";
 
-                    if ($data_history->F_in_out) {
-                        $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
-                            $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
-                        $cal->first_scan();
-                    } else {
-                        $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
-                            $scan_date, $scan_time, $scan_timestamp, $timestamp, $work, $data_history->F_id);
-                        $cal->scan_again();
-                    }
-                }
-                $sql = $cal->getterSQL();
-            }
-        } else {
-            if ($data_member->M_profiling) {
-                $count = 0;
-                if ($data_date_work->D_choose_date_name) {
-                    $days = explode(" ", $data_date_work->D_date_name);
-                    $date = $day_name;
-                } else {
-                    $days = explode(" ", $data_date_work->D_date_num);
-                    $date = date("d", $current_timestamp);
-                }
-                $date_have = count($days);
-                foreach ($days as $day) {
-                    if ($day == $date) {
-                        $work = $scan_time_ver_check <= $start_work_profiling ? "normal" :
-                            ($scan_time_ver_check <= $end_work_profiling ? "late" : "absent");
-
-                        $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
-                            $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
-                        $cal->first_scan();
-
-                        $sql = $cal->getterSQL();
-                    } else {
-                        $count++;
-                    }
-                }
-                //this is OT version
-                if ($count == $date_have) {
-                    $work = "OT";
                     $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
                         $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
                     $cal->first_scan();
                     $sql = $cal->getterSQL();
                 }
-            } else {
-                $work = $scan_time_ver_check <= $start_work_role ? "normal" :
-                    ($scan_time_ver_check <= $get_off_work_role ? "late" : "absent");
-
-                $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key, $day_name,
-                    $scan_date, $scan_time, $scan_timestamp, $timestamp, $work);
-                $cal->first_scan();
-                $sql = $cal->getterSQL();
             }
         }
         $sql_log = "INSERT INTO faceidlog (F_member_id, F_temperature, F_in_out, F_device_ip,F_device_key, 
