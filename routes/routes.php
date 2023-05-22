@@ -22,4 +22,8 @@ return function (App $app) {
     //call api image member
     $routes = require __DIR__ . '/image/image.php';
     $routes($app);
+
+    //call api leave
+    $routes = require __DIR__ . '/leave/leave.php';
+    $routes($app);
 };
