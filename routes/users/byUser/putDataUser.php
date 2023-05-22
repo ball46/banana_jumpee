@@ -14,9 +14,12 @@ return function (App $app) {
         $firstName = $data->firstname;
         $lastName = $data->lastname;
         $updateBy = $data->updateby;
-        $updateDate = $data->updatedate;
         $roleId = $data->roleid;
         $admin = $data->admin;
+
+        date_default_timezone_set('Asia/Bangkok');
+        $current_timestamp = time();
+        $updateDate = date("Y-m-d H:i:s", $current_timestamp);
 
         $sql = "UPDATE member SET M_email = '$email', M_username = '$username', M_display_name = '$displayName', 
                    M_first_name = '$firstName', M_last_name = '$lastName', M_upd_by = '$updateBy',
