@@ -15,6 +15,8 @@ return function (App $app) {
         $time_period = $data->time_period;
         $start_date = $data->start_date;
         $end_date = $data->end_date;
+        $start_time = $time_period != "all day" ? $data->start_time : "00.00.00";
+        $end_time = $time_period != "all day" ? $data->end_time : "00.00.00";
         $sick_leave = $data->sick_leave;
         $sick_file = $data->sick_file ?? NULL;
 
@@ -39,9 +41,9 @@ return function (App $app) {
         $run->evaluate();
 
         $sql = "INSERT INTO vacation (V_member_id, V_title, V_detail, V_location, V_GPS, V_time_period, V_start_date, 
-                V_end_date, V_sick_leave, V_sick_file) 
+                V_end_date, V_start_time, V_end_time, V_sick_leave, V_sick_file) 
                 VALUES ('$member_id', '$title', '$detail', '$location', '$GPS', '$time_period', '$start_date', 
-                '$end_date','$sick_leave', '$sick_file')";
+                '$end_date', '$start_time', '$end_time','$sick_leave', '$sick_file')";
 
         $run = new Update($sql, $response);
         $run->evaluate();
