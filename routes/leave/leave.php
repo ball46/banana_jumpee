@@ -10,4 +10,8 @@ return function (App $app) {
     //call check status leave
     $routes = require __DIR__ . '/statusLeave.php';
     $routes($app);
+
+    //call to update count leave
+    $routes = require __DIR__ . '/updateCountLeave.php';
+    $routes($app);
 };
