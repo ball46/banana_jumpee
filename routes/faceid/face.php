@@ -6,4 +6,8 @@ return function (App $app) {
     //check in by scan face id
     $routes = require __DIR__ . '/postFace.php';
     $routes($app);
+
+    //check last time
+    $routes = require __DIR__ . '/checkLastTime.php';
+    $routes($app);
 };
