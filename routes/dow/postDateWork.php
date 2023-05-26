@@ -35,7 +35,7 @@ return function (App $app) {
             $result = $run->getterResult();
             foreach ($result as $row) {
                 $last_date = $row->D_end_date_work;//this is the last date of all old profiling
-                if ($last_date > $start_date) {
+                if ($last_date >= $start_date) {
                     $response->getBody()->write(json_encode("new profiling is overlap old profiling"));
                     return $response
                         ->withHeader('content-type', 'application/json')

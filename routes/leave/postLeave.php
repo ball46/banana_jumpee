@@ -54,7 +54,7 @@ return function (App $app) {
             $id = $result->C_id;
             $business = $result->C_business_leave;
             $sick = $result->C_sick_leave;
-            $special = $result->C_specia_leave;
+            $special = $result->C_special_leave;
 
             if ($sick_leave) {
                 if ($sick + $day <= $max_sick) {
@@ -115,7 +115,7 @@ return function (App $app) {
                 $result = $run->getterResult();
                 foreach ($result as $row) {
                     $last_date = $row->V_start_date;//this is the last date of all old profiling
-                    if ($last_date > $start_date) {
+                    if ($last_date >= $start_date) {
                         $response->getBody()->write(json_encode("your old vacation is overlap new vacation"));
                         return $response
                             ->withHeader('content-type', 'application/json')
