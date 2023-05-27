@@ -15,11 +15,13 @@ return function (App $app) {
         $lastName = $data->lastname;
         $updateBy = $data->updateby;
         $roleId = $data->roleid;
+        $max_leave_id = $data->max_leave_id;
         $admin = $data->admin;
 
         $sql = "UPDATE member SET M_email = '$email', M_username = '$username', M_display_name = '$displayName', 
                    M_first_name = '$firstName', M_last_name = '$lastName', M_upd_by = '$updateBy', 
-                   M_role_id = '$roleId', M_admin = '$admin' WHERE M_email = '$old_email'";
+                   M_role_id = '$roleId', M_max_leave_id = '$max_leave_id', M_admin = '$admin' 
+                WHERE M_email = '$old_email'";
 
         $run = new Update($sql, $response);
         $run->evaluate();
