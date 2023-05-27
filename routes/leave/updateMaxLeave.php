@@ -14,8 +14,8 @@ return function (App $app) {
         $username = $data->username;
 
         if($admin){
-            $sql = "UPDATE maxleave SET M_business_leave = '$business', M_sick_leave = '$sick', 
-                    M_special_leave = '$special', M_upd_by = '$username'";
+            $sql = "UPDATE maxleave SET ML_business_leave = '$business', ML_sick_leave = '$sick', 
+                    ML_special_leave = '$special', ML_upd_by = '$username'";
 
             $run = new Update($sql, $response);
             $run->evaluate();

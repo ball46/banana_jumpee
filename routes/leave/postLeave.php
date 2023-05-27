@@ -37,18 +37,17 @@ return function (App $app) {
         $day *= $num;
         $can_leave = 1;
 
-        $sql = "SELECT * FROM maxleave";
-        $run = new Get($sql, $response);
-        $run->evaluate();
-        $result = $run->getterResult();
-        $max_business = $result->M_business_leave;
-        $max_sick = $result->M_sick_leave;
-        $max_special = $result->M_special_leave;
+        date_default_timezone_set('Asia/Bangkok');
+        $current_timestamp = time();
+        $now_year = date("Y", $current_timestamp);
 
-        $sql = "SELECT * FROM countleave WHERE C_member_id = '$member_id'";
+        $sql = "SELECT * FROM countleave WHERE C_member_id = '$member_id' AND C_year = '$now_year'";
         $run = new Get($sql, $response);
         $run->evaluate();
         $sql_leave = "";
+        $sql_status = "";
+        $change = 0;
+
         if ($run->getterCount()) {
             $result = $run->getterResult();
             $id = $result->C_id;
@@ -56,56 +55,83 @@ return function (App $app) {
             $sick = $result->C_sick_leave;
             $special = $result->C_special_leave;
 
-            if ($sick_leave) {
-                if ($sick + $day <= $max_sick) {
-                    $sick += $day;
-                    $sql_leave = "UPDATE countleave SET C_sick_leave = '$sick' WHERE C_id = '$id'";
-                } else {
-                    $can_leave = 0;
-                }
-            } else if ($special_leave) {
-                if ($special + $day <= $max_special) {
-                    $special += $day;
+            if ($special_leave) {
+                if ($special >= $day) {
+                    $special -= $day;
                     $sql_leave = "UPDATE countleave SET C_special_leave = '$special' WHERE C_id = '$id'";
                 } else {
                     $can_leave = 0;
                 }
+            } else if ($sick_leave) {
+                if ($sick >= $day) {
+                    $sick -= $day;
+                    $sql_leave = "UPDATE countleave SET C_sick_leave = '$sick' WHERE C_id = '$id'";
+                } else {
+                    $can_leave = 0;
+                }
             } else {
-                if ($business + $day <= $max_business) {
-                    $business += $day;
+                if ($business >= $day) {
+                    $business -= $day;
                     $sql_leave = "UPDATE countleave SET C_business_leave = '$business' WHERE C_id = '$id'";
                 } else {
                     $can_leave = 0;
                 }
             }
-        } else {
-            if ($sick_leave) {
-                if ($day <= $max_sick) {
-                    $sick = $day;
-                    $sql_leave = "INSERT INTO countleave (C_member_id, C_business_leave, C_sick_leave, C_special_leave) 
-                                VALUES ('$member_id', '0', '$sick', '0')";
+        }
+        else {
+            $sql = "SELECT * FROM countleave WHERE C_member_id = '$member_id' AND C_status = '1'";
+            $run = new Get($sql, $response);
+            $run->evaluate();
+            $old_special_leave = 0.0;
+            if ($run->getterCount()) {
+                $data_leave = $run->getterResult();
+                $old_special_leave = $data_leave->C_special_leave;
+                $sql_status = "UPDATE countleave SET C_status = '0' WHERE C_id = '$data_leave->C_id'";
+                $change = 1;
+            }
+
+            $sql = "SELECT * FROM member WHERE M_id = '$member_id'";
+            $run = new Get($sql, $response);
+            $run->evaluate();
+            $data_member = $run->getterResult();
+
+            $sql = "SELECT * FROM maxleave WHERE ML_id = '$data_member->M_max_leave_id'";
+            $run = new Get($sql, $response);
+            $run->evaluate();
+            $result = $run->getterResult();
+            $max_business = $result->ML_business_leave;
+            $max_sick = $result->ML_sick_leave;
+            $max_special = $result->ML_special_leave;
+
+            if ($special_leave) {
+                if ($day <= $max_special + $old_special_leave) {
+                    $special = ($max_special + $old_special_leave) - $day;
+                    $sql_leave = "INSERT INTO countleave (C_member_id, C_business_leave, C_sick_leave, C_special_leave,
+                                    C_year) 
+                                    VALUES ('$member_id', '$max_business', '$max_sick', '$special', '$now_year')";
                 } else {
                     $can_leave = 0;
                 }
-            } else if ($special_leave) {
+            } else if ($sick_leave) {
                 if ($day <= $max_special) {
-                    $special = $day;
-                    $sql_leave = "INSERT INTO countleave (C_member_id, C_business_leave, C_sick_leave, C_special_leave) 
-                                VALUES ('$member_id', '0', '0', '$special')";
+                    $sick = $max_sick - $day;
+                    $sql_leave = "INSERT INTO countleave (C_member_id, C_business_leave, C_sick_leave, C_special_leave,
+                                    C_year) 
+                                    VALUES ('$member_id', '$max_business', '$sick', '$max_special', '$now_year')";
                 } else {
                     $can_leave = 0;
                 }
             } else {
                 if ($day <= $max_business) {
-                    $business = $day;
-                    $sql_leave = "INSERT INTO countleave (C_member_id, C_business_leave, C_sick_leave, C_special_leave) 
-                                VALUES ('$member_id', '$business', '0', '0')";
+                    $business = $max_business - $day;
+                    $sql_leave = "INSERT INTO countleave (C_member_id, C_business_leave, C_sick_leave, C_special_leave,
+                                    C_year) 
+                                    VALUES ('$member_id', '$business', '$max_sick', '$max_special', '$now_year')";
                 } else {
                     $can_leave = 0;
                 }
             }
         }
-
 
         if ($can_leave) {
             $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id' AND V_status = '1'";
@@ -124,6 +150,11 @@ return function (App $app) {
                 }
             }
 
+            if($change) {
+                $run = new Update($sql_status, $response);
+                $run->evaluate();
+            }
+
             $run = new Update($sql_leave, $response);
             $run->evaluate();
 
@@ -131,16 +162,16 @@ return function (App $app) {
             $run = new Update($sql, $response);
             $run->evaluate();
 
-            $sql = "INSERT INTO vacation (V_member_id, V_title, V_detail, V_location, V_GPS, V_time_period, V_start_date, 
-                V_end_date, V_start_time, V_end_time, V_sick_leave, V_sick_file, V_special_leave) 
-                VALUES ('$member_id', '$title', '$detail', '$location', '$GPS', '$time_period', '$start_date', 
-                '$end_date', '$start_time', '$end_time', '$sick_leave', '$sick_file', '$special_leave')";
+            $sql = "INSERT INTO vacation (V_member_id, V_title, V_detail, V_location, V_GPS, V_time_period, 
+                    V_start_date, V_end_date, V_start_time, V_end_time, V_sick_leave, V_sick_file, V_special_leave) 
+                    VALUES ('$member_id', '$title', '$detail', '$location', '$GPS', '$time_period', '$start_date', 
+                    '$end_date', '$start_time', '$end_time', '$sick_leave', '$sick_file', '$special_leave')";
 
             $run = new Update($sql, $response);
             $run->evaluate();
             return $run->return();
         } else {
-            $response->getBody()->write(json_encode("Your vacation was maximum for now"));
+            $response->getBody()->write(json_encode("Your vacation was over limit"));
             return $response
                 ->withHeader('content-type', 'application/json')
                 ->withStatus(401);

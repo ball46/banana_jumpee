@@ -12,6 +12,10 @@ return function (App $app) {
     $routes($app);
 
     //call to update count leave
-    $routes = require __DIR__ . '/updateCountLeave.php';
+    $routes = require __DIR__ . '/updateMaxLeave.php';
+    $routes($app);
+
+    //call add special days
+    $routes = require __DIR__ . '/addSpecialLeave.php';
     $routes($app);
 };
