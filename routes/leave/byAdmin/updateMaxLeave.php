@@ -8,6 +8,7 @@ return function (App $app) {
     $app->put('/leave/update/max/count', function (Request $request, Response $response) {
         $data = json_decode($request->getBody());
         $id = $data->id;
+        $position = $data->position;
         $business = $data->business_leave;
         $sick = $data->sick_leave;
         $special = $data->special_leave;
@@ -15,8 +16,8 @@ return function (App $app) {
         $admin = $data->admin;
 
         if($admin){
-            $sql = "UPDATE maxleave SET ML_business_leave = '$business', ML_sick_leave = '$sick', 
-                    ML_special_leave = '$special', ML_upd_by = '$username' WHERE ML_id = '$id'";
+            $sql = "UPDATE maxleave SET ML_position = '$position', ML_business_leave = '$business', 
+                    ML_sick_leave = '$sick', ML_special_leave = '$special', ML_upd_by = '$username' WHERE ML_id = '$id'";
             $run = new Update($sql, $response);
             $run->evaluate();
             return $run->return();

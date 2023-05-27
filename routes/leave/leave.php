@@ -18,4 +18,8 @@ return function (App $app) {
     //call add special days
     $routes = require __DIR__ . '/byAdmin/addSpecialLeave.php';
     $routes($app);
+
+    //call add new position max leave
+    $routes = require __DIR__ . '/byAdmin/postMaxLeave.php';
+    $routes($app);
 };
