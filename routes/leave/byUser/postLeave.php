@@ -158,14 +158,24 @@ return function (App $app) {
             $run = new Update($sql_leave, $response);
             $run->evaluate();
 
-            $sql = "UPDATE member SET M_leave = '1' WHERE M_id = '$member_id'";
-            $run = new Update($sql, $response);
+            $sql = "SELECT * FROM allowcount";
+            $run = new Get($sql, $response);
             $run->evaluate();
+            $data_allow = $run->getterResult();
+            if($special_leave){
+                $allow_count = $data_allow->A_special;
+            }else if($sick_leave){
+                $allow_count = $data_allow->A_sick;
+            }else{
+                $allow_count = $data_allow->A_business;
+            }
 
             $sql = "INSERT INTO vacation (V_member_id, V_title, V_detail, V_location, V_GPS, V_time_period, 
-                    V_start_date, V_end_date, V_start_time, V_end_time, V_sick_leave, V_sick_file, V_special_leave) 
+                    V_start_date, V_end_date, V_start_time, V_end_time, V_sick_leave, V_sick_file, V_special_leave, 
+                    V_allow) 
                     VALUES ('$member_id', '$title', '$detail', '$location', '$GPS', '$time_period', '$start_date', 
-                    '$end_date', '$start_time', '$end_time', '$sick_leave', '$sick_file', '$special_leave')";
+                    '$end_date', '$start_time', '$end_time', '$sick_leave', '$sick_file', '$special_leave', 
+                    '$allow_count')";
 
             $run = new Update($sql, $response);
             $run->evaluate();
