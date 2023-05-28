@@ -107,8 +107,7 @@ return function (App $app) {
                     $cal->first_scan();
                 }
                 $sql = $cal->getterSQL();
-            }
-            else {
+            } else {
                 if ($have_leave) {
                     if ($data_history->F_in_out && $data_history->F_date == $scan_date) {
                         $in_out = 0;
@@ -126,8 +125,7 @@ return function (App $app) {
                         $cal->first_scan();
                     }
                     $sql = $cal->getterSQL();
-                }
-                else {
+                } else {
                     if ($have_or_not) {
                         //get date time for face id history
                         $last_date = date("Y-m-d", strtotime($data_history->F_date));
@@ -188,12 +186,13 @@ return function (App $app) {
 
                                     if ($data_history->F_in_out) {
                                         $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
-                                            $day_name, $scan_date, $scan_time, $scan_timestamp, $timestamp_by_device, $work);
+                                            $day_name, $scan_date, $scan_time, $scan_timestamp, $timestamp_by_device,
+                                            $work);
                                         $cal->first_scan();
                                     } else {
                                         $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
-                                            $day_name, $scan_date, $scan_time, $scan_timestamp, $timestamp_by_device, $work,
-                                            $data_history->F_id);
+                                            $day_name, $scan_date, $scan_time, $scan_timestamp, $timestamp_by_device,
+                                            $work, $data_history->F_id);
                                         $cal->scan_again();
                                     }
                                 }
