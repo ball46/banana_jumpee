@@ -26,4 +26,8 @@ return function (App $app) {
     //call api leave
     $routes = require __DIR__ . '/leave/leave.php';
     $routes($app);
+
+    //call api holiday
+    $routes = require __DIR__ . '/holiday/holiday.php';
+    $routes($app);
 };
