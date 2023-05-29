@@ -46,9 +46,9 @@ class Work
     public function scan_again(): void
     {
         $this->sql = "UPDATE faceid SET F_temperature = '$this->temperature', F_in_out = '$this->in_out', 
-                    F_device_ip = '$this->device_ip', F_device_key = '$this->device_key', F_time = '$this->scan_time',
-                    F_cr_date = '$this->scan_timestamp', F_timestamp_by_device = '$this->timestamp', F_work = '$this->work' 
-                    WHERE F_id = '$this->id'";
+                    F_device_ip = '$this->device_ip', F_device_key = '$this->device_key', F_date = '$this->scan_date', 
+                    F_time = '$this->scan_time',F_cr_date = '$this->scan_timestamp', 
+                    F_timestamp_by_device = '$this->timestamp', F_work = '$this->work' WHERE F_id = '$this->id'";
     }
 
     public function getterSQL(): string

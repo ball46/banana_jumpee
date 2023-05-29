@@ -86,7 +86,7 @@ return function (App $app) {
             }
 
             $sql = "SELECT * FROM holiday 
-                    WHERE H_start_date <= '$scan_date' AND H_end_date >= '$scan_date' AND H_status = '1'";
+                    WHERE H_status = '1' AND '$scan_date' BETWEEN H_start_date AND H_end_date";
             $run = new Get($sql, $response);
             $run->evaluate();
             if ($run->getterCount()) {
