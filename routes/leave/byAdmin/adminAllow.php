@@ -39,14 +39,14 @@ return function (App $app) {
                 $now_timestamp = date("Y-m-d H:i:s", $current_timestamp);
                 if($now_date >= $start_date && $now_date <= $end_date) {
                     $sql = "SELECT * FROM faceid 
-                            WHERE F_member_id = '$member_id' AND F_date IN ('$start_date','$end_date')";
+                            WHERE F_member_id = '$member_id' AND F_date BETWEEN '$start_date' AND '$end_date'";
                     $run = new GetAll($sql, $response);
                     $run->evaluate();
                     $result = $run->getterResult();
 
                     if($data_vacation->V_time_period != "all day"){
                         foreach ($result as $data){
-                            $id = $data->id;
+                            $id = $data->F_id;
                             $temperature = $data->F_temperature;
                             $in_out = $data->F_in_out;
                             $device_ip = $data->F_device_ip;
@@ -78,7 +78,7 @@ return function (App $app) {
                         }
                     }else{
                         foreach ($result as $data){
-                            $id = $data->id;
+                            $id = $data->F_id;
                             $temperature = $data->F_temperature;
                             $in_out = $data->F_in_out;
                             $device_ip = $data->F_device_ip;

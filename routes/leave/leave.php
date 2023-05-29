@@ -22,4 +22,8 @@ return function (App $app) {
     //call add new position max leave
     $routes = require __DIR__ . '/byAdmin/postMaxLeave.php';
     $routes($app);
+
+    //call add new position max leave
+    $routes = require __DIR__ . '/byAdmin/adminAllow.php';
+    $routes($app);
 };
