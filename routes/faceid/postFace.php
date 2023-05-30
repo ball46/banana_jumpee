@@ -274,8 +274,6 @@ return function (App $app) {
                         F_date_name, F_date, F_time, F_cr_date, F_timestamp_by_device, F_work)
                         VALUES ('$member_id', '$temperature', '$in_out', '$device_ip', '$device_key','$day_name',
                         '$scan_date', '$scan_time', '$scan_timestamp', '$timestamp_by_device', '$work')";
-            $run = new Update($sql_log, $response);
-            $run->evaluate();
         } else {
             $device_date = new DateTime($device_YMD);
             $device_date_name = $device_date->format('D');
@@ -475,7 +473,13 @@ return function (App $app) {
                     }
                 }
             }
+            $sql_log = "INSERT INTO faceidlog (F_member_id, F_temperature, F_in_out, F_device_ip, F_device_key, 
+                        F_date_name, F_date, F_time, F_cr_date, F_timestamp_by_device, F_work)
+                        VALUES ('$member_id', '$temperature', '$in_out', '$device_ip', '$device_key','$device_date_name',
+                        '$device_YMD', '$device_hour', '$scan_timestamp', '$timestamp_by_device', '$work')";
         }
+        $run = new Update($sql_log, $response);
+        $run->evaluate();
         $run = new Update($sql, $response);
         $run->evaluate();
         return $run->return();
