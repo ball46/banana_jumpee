@@ -24,6 +24,6 @@ return function (App $app) {
     $routes($app);
 
     //call add new position max leave
-    $routes = require __DIR__ . '/byAdmin/adminAllow.php';
+    $routes = require __DIR__ . '/byAdmin/memberAllow.php';
     $routes($app);
 };
