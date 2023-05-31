@@ -5,9 +5,15 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->put('/leave/admin/allow', function (Request $request, Response $response) {
+    $app->put('/leave/member/allow', function (Request $request, Response $response) {
         $data = json_decode($request->getBody());
+        $member_allow_id = $data->member_allow_id;
         $vacation_id = $data->vacation_id;
+
+        $sql_log = "INSERT INTO allowlog (AL_member_allow_id, AL_vacation_id) 
+                    VALUES ('$member_allow_id', '$vacation_id')";
+        $run = new Update($sql_log, $response);
+        $run->evaluate();
 
         $sql = "SELECT * FROM vacation WHERE V_id = '$vacation_id'";
         $run = new Get($sql, $response);
@@ -37,7 +43,7 @@ return function (App $app) {
             $now_timestamp = date("Y-m-d H:i:s", $current_timestamp);
             if ($now_date >= $start_date && $now_date <= $end_date) {
                 $sql = "SELECT * FROM faceid 
-                            WHERE F_member_id = '$member_id' AND F_date BETWEEN '$start_date' AND '$end_date'";
+                        WHERE F_member_id = '$member_id' AND F_date BETWEEN '$start_date' AND '$end_date'";
                 $run = new GetAll($sql, $response);
                 $run->evaluate();
                 $result = $run->getterResult();
@@ -101,6 +107,5 @@ return function (App $app) {
                 ->withHeader('content-type', 'application/json')
                 ->withStatus(304);
         }
-
     });
 };
