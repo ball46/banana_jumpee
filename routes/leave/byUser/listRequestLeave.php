@@ -29,10 +29,8 @@ return function (App $app){
                                 WHERE AL_vacation_id = '$vacation_id' AND AL_member_allow_id = '$member_id'";
                         $run = new Get($sql, $response);
                         $run->evaluate();
-                        if($run->getterCount()){
-                            continue;
-                        }else{
-                            $send[] = $data;
+                        if($run->getterCount() == 0){
+                            $send[] = $vacation;
                         }
                     }
                 }
