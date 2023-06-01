@@ -5,9 +5,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app){
-    $app->get('/leave/list/request/leave', function (Request $request, Response $response) {
-        $data = json_decode($request->getBody());
-        $member_id = $data->member_id;
+    $app->get('/leave/list/request/leave/{member_id}',
+        function (Request $request, Response $response, array $args) {
+        $member_id = $args['member_id'];
 
         $send = [];
 
