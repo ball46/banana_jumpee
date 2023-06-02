@@ -16,6 +16,6 @@ return function (App $app) {
     $routes($app);
 
     //check start work foreach members
-    $routes = require __DIR__ . '/countFaceOnCurrentMonth.php';
+    $routes = require __DIR__ . '/countFaceOnMonth.php';
     $routes($app);
 };
