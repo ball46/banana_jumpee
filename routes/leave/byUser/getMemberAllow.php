@@ -5,7 +5,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app){
-    $app->get('/leave/get/member/allow/{member_id}', function (Request $request, Response $response, array $args) {
+    $app->get('/leave/get/member/allow/{member_id}',
+        function (Request $request, Response $response, array $args) {
         $member_id = $args['member_id'];
 
         $sql = "SELECT * FROM memberallow WHERE SM_member_applicant_id = '$member_id'";
