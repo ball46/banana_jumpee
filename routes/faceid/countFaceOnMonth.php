@@ -33,19 +33,19 @@ return function (App $app) {
                 $run = new Get($sql, $response);
                 $run->evaluate();
                 if($run->getterCount()) {
-                    $work = $run->getterResult();
+                    $work = ($run->getterResult())->F_work;
                     $status = $work == "absent" ? "absent" : ($work == "late" ? "late" : "normal");
                 }
 
                 $sql = "SELECT H_name FROM holiday WHERE '$dateYMD' BETWEEN H_start_date AND H_end_date";
                 $run = new Get($sql, $response);
                 $run->evaluate();
-                $holiday_name = $run->getterCount() ? $run->getterResult() : "";
+                $holiday_name = $run->getterCount() ? ($run->getterResult())->H_name : "";
 
                 $sql = "SELECT V_title FROM vacation WHERE '$dateYMD' BETWEEN V_start_date AND V_end_date";
                 $run = new Get($sql, $response);
                 $run->evaluate();
-                $vacation_name = $run->getterCount() ? $run->getterResult() : "";
+                $vacation_name = $run->getterCount() ? $run->getterResult()->V_title : "";
 
                 $data_date[] = array(
                     'date' => $dateYMD,
