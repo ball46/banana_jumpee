@@ -12,7 +12,10 @@ return function (App $app) {
         $current_timestamp = time();
         $now_date = date("Y-m-d", $current_timestamp);
 
-        $time = [];
+        $time = array(
+            'time in' => "",
+            'time out' => ""
+        );
 
         $sql = "SELECT * FROM faceid WHERE F_member_id = '$member_id' AND F_date = '$now_date'";
         $run = new GetAll($sql, $response);
@@ -20,7 +23,11 @@ return function (App $app) {
         if($run->getterCount()) {
             $data_history = $run->getterResult();
             foreach ($data_history as $data){
-                $time[] = $data->F_time;
+                if($data->F_in_out){
+                    $time['time in'] = $data->F_time;
+                }else{
+                    $time['time out'] = $data->F_time;
+                }
             }
         }
 

@@ -18,4 +18,8 @@ return function (App $app) {
     //check start work foreach members
     $routes = require __DIR__ . '/countFaceOnMonth.php';
     $routes($app);
+
+    //get time in out work in current date
+    $routes = require __DIR__ . '/timeInOutWork.php';
+    $routes($app);
 };
