@@ -1,0 +1,32 @@
+<?php
+
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\App;
+
+return function (App $app) {
+    $app->get('/face/time/in/out/{member_id}', function (Request $request, Response $response, array $args) {
+        $member_id = $args['member_id'];
+
+        date_default_timezone_set('Asia/Bangkok');
+        $current_timestamp = time();
+        $now_date = date("Y-m-d", $current_timestamp);
+
+        $time = [];
+
+        $sql = "SELECT * FROM faceid WHERE F_member_id = '$member_id' AND F_date = '$now_date'";
+        $run = new GetAll($sql, $response);
+        $run->evaluate();
+        if($run->getterCount()) {
+            $data_history = $run->getterResult();
+            foreach ($data_history as $data){
+                $time[] = $data->F_time;
+            }
+        }
+
+        $response->getBody()->write(json_encode($time));
+        return $response
+            ->withHeader('content-type', 'application/json')
+            ->withStatus(200);
+    });
+};
