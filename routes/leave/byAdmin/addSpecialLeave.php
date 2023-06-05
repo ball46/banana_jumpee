@@ -22,8 +22,9 @@ return function (App $app){
         $now_year = date("Y", $current_timestamp);
 
         if($admin) {
-            $sql = "UPDATE countleave SET C_special_leave = C_special_leave + '$day_special' 
-                WHERE C_member_id = '$member_id' AND C_year = '$now_year'";
+            $sql = "UPDATE countleave SET C_special_leave = C_special_leave + '$day_special', 
+                    C_max_special_leave = C_max_special_leave + '$day_special'
+                    WHERE C_member_id = '$member_id' AND C_year = '$now_year'";
             $run = new Update($sql, $response);
             $run->evaluate();
 

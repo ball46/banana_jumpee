@@ -107,8 +107,9 @@ return function (App $app) {
                 if ($day <= $max_special + $old_special_leave) {
                     $special = ($max_special + $old_special_leave) - $day;
                     $sql_leave = "INSERT INTO countleave (C_member_id, C_business_leave, C_sick_leave, C_special_leave,
-                                    C_year) 
-                                    VALUES ('$member_id', '$max_business', '$max_sick', '$special', '$now_year')";
+                                    C_max_special_leave, C_year) 
+                                    VALUES ('$member_id', '$max_business', '$max_sick', '$special', '$max_special', 
+                                    '$now_year')";
                 } else {
                     $can_leave = 0;
                 }
@@ -116,8 +117,9 @@ return function (App $app) {
                 if ($day <= $max_special) {
                     $sick = $max_sick - $day;
                     $sql_leave = "INSERT INTO countleave (C_member_id, C_business_leave, C_sick_leave, C_special_leave,
-                                    C_year) 
-                                    VALUES ('$member_id', '$max_business', '$sick', '$max_special', '$now_year')";
+                                    C_max_special_leave, C_year) 
+                                    VALUES ('$member_id', '$max_business', '$sick', '$max_special', '$max_special', 
+                                    '$now_year')";
                 } else {
                     $can_leave = 0;
                 }
@@ -125,8 +127,9 @@ return function (App $app) {
                 if ($day <= $max_business) {
                     $business = $max_business - $day;
                     $sql_leave = "INSERT INTO countleave (C_member_id, C_business_leave, C_sick_leave, C_special_leave,
-                                    C_year) 
-                                    VALUES ('$member_id', '$business', '$max_sick', '$max_special', '$now_year')";
+                                    C_max_special_leave, C_year) 
+                                    VALUES ('$member_id', '$business', '$max_sick', '$max_special', '$max_special', 
+                                    '$now_year')";
                 } else {
                     $can_leave = 0;
                 }
