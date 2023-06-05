@@ -10,12 +10,13 @@ return function (App $app) {
         $name = $data->role_name;
         $start_time = $data->start_time;
         $get_off_time = $data->get_off_time;
+        $rest_day = $data->rest_day;
         $username = $data->username;
         $admin = $data->admin;
 
         if($admin){
-            $sql = "INSERT INTO role (R_name, R_start_work, R_get_off_work, R_upd_by) 
-                    VALUES ('$name', '$start_time', '$get_off_time', '$username')";
+            $sql = "INSERT INTO role (R_name, R_start_work, R_get_off_work, R_rest_day, R_upd_by) 
+                    VALUES ('$name', '$start_time', '$get_off_time', '$rest_day', '$username')";
 
             $run = new Update($sql, $response);
             $run->evaluate();
