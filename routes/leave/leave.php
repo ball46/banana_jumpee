@@ -3,6 +3,14 @@
 use Slim\App;
 
 return function (App $app) {
+    //call get list who want to leave by this member id
+    $routes = require __DIR__ . '/bySystem/listRequestLeave.php';
+    $routes($app);
+
+    //call to get leave day all types to show on the dashboard
+    $routes = require __DIR__ . '/bySystem/showLeaveDay.php';
+    $routes($app);
+
     //call check status leave
     $routes = require __DIR__ . '/bySystem/statusLeave.php';
     $routes($app);
@@ -25,10 +33,6 @@ return function (App $app) {
 
     //call to get member allow
     $routes = require __DIR__ . '/byUser/getMemberAllow.php';
-    $routes($app);
-
-    //call get list who want to leave by this member id
-    $routes = require __DIR__ . '/byUser/listRequestLeave.php';
     $routes($app);
 
     //call add new position max leave
