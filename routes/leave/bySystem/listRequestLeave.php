@@ -18,20 +18,42 @@ return function (App $app){
             $data_allow = $run->getterResult();
             foreach($data_allow as $data){
                 $member_applicant_id = $data->SM_member_applicant_id;
-                $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_applicant_id' AND V_status = '1'";
+                $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_applicant_id' AND V_status = '1'
+                        AND FIND_IN_SET('$member_id', V_wait) > 0";
                 $run = new GetAll($sql, $response);
                 $run->evaluate();
                 if($run->getterCount()){
                     $data_vacation = $run->getterResult();
                     foreach ($data_vacation as $vacation){
-                        $vacation_id = $vacation->V_id;
-                        $sql = "SELECT * FROM allowlog 
-                                WHERE AL_vacation_id = '$vacation_id' AND AL_member_allow_id = '$member_id'";
-                        $run = new Get($sql, $response);
-                        $run->evaluate();
-                        if($run->getterCount() == 0){
-                            $send[] = $vacation;
+                        $member_wait = $vacation->V_wait;
+                        $member_wait = explode(" ", $member_wait);
+                        array_pop($member_wait);
+                        $allow = [];
+
+                        $member_allow = $vacation->V_allow;
+                        $member_allow = explode(" ", $member_allow);
+                        array_pop($member_wait);
+                        $wait = [];
+
+                        foreach ($member_wait as $member){
+                            $sql = "SELECT * FROM member WHERE M_id = '$member'";
+                            $run = new Get($sql, $response);
+                            $run->evaluate();
+                            $allow[] = $run->getterResult();
                         }
+
+                        foreach ($member_allow as $member){
+                            $sql = "SELECT * FROM member WHERE M_id = '$member'";
+                            $run = new Get($sql, $response);
+                            $run->evaluate();
+                            $wait[] = $run->getterResult();
+                        }
+
+                        $send[] = array(
+                            'vacation' => $vacation,
+                            'allow' => $allow,
+                            'wait' => $wait
+                        );
                     }
                 }
             }
