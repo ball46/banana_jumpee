@@ -22,6 +22,21 @@ return function (App $app){
                 ->withHeader('content-type', 'application/json')
                 ->withStatus(401);
         }else{
+            $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_applicant_id' AND V_status = '1' 
+                    AND V_count_allow > 0";
+            $run = new GetAll($sql, $response);
+            $run->evaluate();
+            if($run->getterCount()){
+                $data_vacation = $run->getterResult();
+                foreach($data_vacation as $data){
+                    $member_wait = $data->V_wait;
+                    $member_wait = $member_wait . $member_approve_id . " ";
+                    $sql = "UPDATE vacation SET V_wait = '$member_wait' WHERE V_id = '$data->V_id'";
+                    $run = new Update($sql, $response);
+                    $run->evaluate();
+                }
+            }
+
             $sql = "INSERT INTO memberallow (SM_member_applicant_id, SM_member_approve_id, SM_type_leave) 
                     VALUES ('$member_applicant_id', '$member_approve_id', '$type_leave')";
             $run = new Update($sql, $response);

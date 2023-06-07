@@ -22,13 +22,29 @@ return function (App $app) {
         $member_id = $data_vacation->V_member_id;
         $start_date = $data_vacation->V_start_date;
         $end_date = $data_vacation->V_end_date;
+
+        $member_wait = $data_vacation->V_wait;
+        $member_wait = explode(" ", $member_wait);
+        array_pop($member_wait);
+        $location = array_search($member_allow_id, $member_wait);
+        array_splice($member_wait, $location, 1);
+
+        $member = "";
+        foreach ($member_wait as $data){
+            $member = $member . $data . " ";
+        }
+        $member_allow = $data_vacation->V_allow;
+        $member_allow = $member_allow == "" ? $member_allow_id . " " : $member_allow . $member_allow_id . " ";
+
         if ($data_vacation->V_allow > 1) {
-            $sql = "UPDATE vacation SET V_allow = V_allow - '1' WHERE V_id = '$vacation_id'";
+            $sql = "UPDATE vacation SET V_allow = '$member_allow', V_wait = '$member', 
+                    V_count_allow = V_count_allow - '1' WHERE V_id = '$vacation_id'";
             $run = new Update($sql, $response);
             $run->evaluate();
             return $run->return();
         } else if ($data_vacation->V_allow == 1) {
-            $sql = "UPDATE vacation SET V_allow = '0' WHERE V_id = '$vacation_id'";
+            $sql = "UPDATE vacation SET V_allow = '$member_allow', V_wait = '$member',
+                    V_count_allow = '0' WHERE V_id = '$vacation_id'";
             $run = new Update($sql, $response);
             $run->evaluate();
 
@@ -102,6 +118,10 @@ return function (App $app) {
             }
             return $run->return();
         } else {
+            $sql = "UPDATE vacation SET V_allow = '$member_allow', V_wait = '$member' WHERE V_id = '$vacation_id'";
+            $run = new Update($sql, $response);
+            $run->evaluate();
+
             $response->getBody()->write(json_encode("The number of admins has been reached as required."));
             return $response
                 ->withHeader('content-type', 'application/json')
