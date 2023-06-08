@@ -26,6 +26,9 @@ return function (App $app) {
 
             foreach ($period as $date) {
                 $dateYMD = $date->format('Y-m-d');
+                $dateY = $date->format('Y');
+                $dateM = $date->format('m');
+                $dateD = $date->format('d');
                 $status = "none";
 
                 $sql = "SELECT F_work FROM faceid WHERE F_date = '$dateYMD' AND F_in_out = '1' 
@@ -48,7 +51,9 @@ return function (App $app) {
                 $vacation_name = $run->getterCount() ? $run->getterResult()->V_title : "";
 
                 $data_date[] = array(
-                    'date' => $dateYMD,
+                    'year' => $dateY,
+                    'month' => $dateM,
+                    'day' => $dateD,
                     'status' => $status,
                     'holiday' => $holiday_name,
                     'leave' => $vacation_name,
