@@ -5,13 +5,16 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->get('/leave/list/history/{member_id}',
+    $app->get('/leave/list/history/{member_id}/{limit}/{offset}',
         function (Request $request, Response $response, array $args) {
             $member_id = $args['member_id'];
+            $limit = $args['limit'];
+            $offset = $args['offset'];
 
             $send = [];
 
-            $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id'";
+            $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id' ORDER BY V_id DESC 
+                    LIMIT '$limit' OFFSET '$offset'";
             $run = new GetAll($sql, $response);
             $run->evaluate();
             if ($run->getterCount()) {
