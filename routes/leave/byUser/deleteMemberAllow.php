@@ -52,21 +52,23 @@ return function (App $app){
                     AND V_count_allow > 0 AND FIND_IN_SET('$member_allow_id', V_allow) > 0";
             $run = new GetAll($sql, $response);
             $run->evaluate();
-            $array_data = $run->getterResult();
-            foreach ($array_data as $data) {
-                $member_allow = $data->V_allow;
-                $member_allow = explode(" ", $member_allow);
-                array_pop($member_allow);
-                $location = array_search($member_allow_id, $member_allow);
-                array_splice($member_allow, $location, 1);
-                $member = "";
-                foreach ($member_allow as $data_allow){
-                    $member = $member . $data_allow . " ";
-                }
-                $sql = "UPDATE vacation SET V_allow = '$member', V_count_allow = V_count_allow + 1 
+            if($run->getterCount()) {
+                $array_data = $run->getterResult();
+                foreach ($array_data as $data) {
+                    $member_allow = $data->V_allow;
+                    $member_allow = explode(" ", $member_allow);
+                    array_pop($member_allow);
+                    $location = array_search($member_allow_id, $member_allow);
+                    array_splice($member_allow, $location, 1);
+                    $member = "";
+                    foreach ($member_allow as $data_allow) {
+                        $member = $member . $data_allow . " ";
+                    }
+                    $sql = "UPDATE vacation SET V_allow = '$member', V_count_allow = V_count_allow + 1 
                         WHERE V_id = '$data->V_id'";
-                $run = new Update($sql, $response);
-                $run->evaluate();
+                    $run = new Update($sql, $response);
+                    $run->evaluate();
+                }
             }
         }
 
