@@ -3,6 +3,10 @@
 use Slim\App;
 
 return function (App $app) {
+    //call get count list
+    $routes = require __DIR__ . '/bySystem/countHistoryLeave.php';
+    $routes($app);
+
     //call get list history leave
     $routes = require __DIR__ . '/bySystem/listLeaveHistory.php';
     $routes($app);
