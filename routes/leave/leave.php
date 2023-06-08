@@ -3,6 +3,10 @@
 use Slim\App;
 
 return function (App $app) {
+    //call get list history leave
+    $routes = require __DIR__ . '/bySystem/listLeaveHistory.php';
+    $routes($app);
+
     //call get list who want to leave by this member id
     $routes = require __DIR__ . '/bySystem/listRequestLeave.php';
     $routes($app);
