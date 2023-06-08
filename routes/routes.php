@@ -30,4 +30,8 @@ return function (App $app) {
     //call api holiday
     $routes = require __DIR__ . '/holiday/holiday.php';
     $routes($app);
+
+    //call api health
+    $routes = require __DIR__ . '/health/health.php';
+    $routes($app);
 };

@@ -21,6 +21,13 @@ return function (App $app) {
                 $data_leave = $run->getterResult();
                 foreach ($data_leave as $data) {
                     $member_wait = $data->V_wait;
+                    $date = $data->V_date_ask_to_leave;
+                    $date = explode("-", $date);
+                    $date_ask_to_leave = array(
+                        'year' => $date[0],
+                       'month' => $date[1],
+                        'day' => $date[2],
+                    );
 
                     $sql = "SELECT * FROM allowcount";
                     $run = new Get($sql, $response);
@@ -66,7 +73,8 @@ return function (App $app) {
                         'type' => $type,
                         'allow' => $allow,
                         'wait' => $wait,
-                        'max_count' => $max_count
+                        'max_count' => $max_count,
+                        'date_ask_to_leave' => $date_ask_to_leave
                     );
                 }
                 $response->getBody()->write(json_encode($send));

@@ -21,6 +21,11 @@ return function (App $app) {
         $sick_file = $data->sick_file ?? NULL;
         $special_leave = $data->special_leave;
 
+        //create time by php
+        date_default_timezone_set('Asia/Bangkok');
+        $current_timestamp = time();
+        $now_date = date("Y-m-d", $current_timestamp);
+
         $start = new DateTime($start_date);
         $end = new DateTime($end_date);
         $end->modify('+1 day'); // Include the end date
@@ -210,11 +215,11 @@ return function (App $app) {
             $run->evaluate();
 
             $sql = "INSERT INTO vacation (V_member_id, V_title, V_detail, V_location, V_GPS, V_time_period, 
-                    V_start_date, V_end_date, V_start_time, V_end_time, V_sick_leave, V_sick_file, V_special_leave, 
-                    V_allow, V_wait, V_count_allow) 
+                    V_start_date, V_end_date, V_start_time, V_end_time, V_date_ask_to_leave, V_count_day, V_sick_leave, 
+                    V_sick_file, V_special_leave, V_allow, V_wait, V_count_allow) 
                     VALUES ('$member_id', '$title', '$detail', '$location', '$GPS', '$time_period', '$start_date', 
-                    '$end_date', '$start_time', '$end_time', '$sick_leave', '$sick_file', '$special_leave', 
-                    '', '$member', '$allow_count')";
+                    '$end_date', '$start_time', '$end_time', '$now_date', '$day', '$sick_leave', '$sick_file', 
+                    '$special_leave', '', '$member', '$allow_count')";
 
             $run = new Update($sql, $response);
             $run->evaluate();
