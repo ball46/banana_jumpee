@@ -18,6 +18,21 @@ return function (App $app){
             $data_allow = $run->getterResult();
             foreach($data_allow as $data){
                 $member_applicant_id = $data->SM_member_applicant_id;
+                $type = $data->SM_type_leave;
+
+                $sql = "SELECT * FROM allowcount";
+                $run = new Get($sql, $response);
+                $run->evaluate();
+                $data_count = $run->getterResult();
+
+                if($type == "business"){
+                    $max_count = $data_count->A_business;
+                }else if($type == "sick"){
+                    $max_count = $data_count->A_sick;
+                }else{
+                    $max_count = $data_count->A_special;
+                }
+
                 $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_applicant_id' AND V_status = '1'
                         AND FIND_IN_SET('$member_id', V_wait) > 0";
                 $run = new GetAll($sql, $response);
@@ -51,8 +66,10 @@ return function (App $app){
 
                         $send[] = array(
                             'vacation' => $vacation,
+                            'type' => $type,
                             'allow' => $allow,
-                            'wait' => $wait
+                            'wait' => $wait,
+                            'max_count' => $max_count
                         );
                     }
                 }
