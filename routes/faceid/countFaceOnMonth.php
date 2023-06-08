@@ -28,7 +28,9 @@ return function (App $app) {
                 $dateYMD = $date->format('Y-m-d');
                 $dateY = $date->format('Y');
                 $dateM = $date->format('m');
+                $dateM = ltrim($dateM, '0');
                 $dateD = $date->format('d');
+                $dateD = ltrim($dateD, '0');
                 $status = "none";
 
                 $sql = "SELECT F_work FROM faceid WHERE F_date = '$dateYMD' AND F_in_out = '1' 
@@ -45,10 +47,16 @@ return function (App $app) {
                 $run->evaluate();
                 $holiday_name = $run->getterCount() ? ($run->getterResult())->H_name : "";
 
-                $sql = "SELECT V_title FROM vacation WHERE '$dateYMD' BETWEEN V_start_date AND V_end_date";
+                $sql = "SELECT * FROM vacation WHERE '$dateYMD' BETWEEN V_start_date AND V_end_date";
                 $run = new Get($sql, $response);
                 $run->evaluate();
-                $vacation_name = $run->getterCount() ? $run->getterResult()->V_title : "";
+                if($run->getterCount()){
+                    $data_vacation = $run->getterResult();
+                    $vacation_name = $data_vacation->V_title;
+                }else{
+                    $data_vacation = "";
+                    $vacation_name = "";
+                }
 
                 $data_date[] = array(
                     'year' => $dateY,
@@ -57,6 +65,7 @@ return function (App $app) {
                     'status' => $status,
                     'holiday' => $holiday_name,
                     'leave' => $vacation_name,
+                    'leave data' => $data_vacation
                 );
             }
 
