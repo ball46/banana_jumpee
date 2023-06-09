@@ -312,8 +312,7 @@ return function (App $app) {
         } else {
             $device_date = new DateTime($device_YMD);
             $device_date_name = $device_date->format('D');
-            $sql = "SELECT * FROM holiday 
-                    WHERE H_status = '1' AND '$device_YMD' BETWEEN H_start_date AND H_end_date";
+            $sql = "SELECT * FROM holiday WHERE '$device_YMD' BETWEEN H_start_date AND H_end_date";
             $run = new Get($sql, $response);
             $run->evaluate();
             //holiday case

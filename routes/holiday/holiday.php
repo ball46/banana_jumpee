@@ -10,4 +10,8 @@ return function (App $app) {
     //call to put holiday
     $routes = require __DIR__ . '/putHoliday.php';
     $routes($app);
+
+    //call to check status holiday
+    $routes = require __DIR__ . '/statusHoliday.php';
+    $routes($app);
 };
