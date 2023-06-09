@@ -17,6 +17,7 @@ return function (App $app) {
         $updateBy = $data->updateby;
         $roleId = $data->roleid;
         $max_leave_id = $data->max_leave_id;
+        $persona_id = $data->persona_id;
         $admin = $data->admin ?? false;
 
         if (!$email || !$password) {
@@ -30,9 +31,9 @@ return function (App $app) {
         }
 
         $sql = "INSERT INTO member (M_email, M_password, M_username, M_display_name, M_first_name, M_last_name, 
-                    M_upd_by, M_role_id, M_max_leave_id, M_admin) 
+                    M_upd_by, M_role_id, M_max_leave_id, M_persona_id, M_admin) 
                 VALUES ('$email', '$password', '$username', '$displayName', '$firstName', '$lastName', 
-                        '$updateBy', '$roleId', '$max_leave_id', '$admin')";
+                        '$updateBy', '$roleId', '$max_leave_id', '$persona_id', '$admin')";
 
         $run = new Update($sql, $response);
         $run->evaluate();

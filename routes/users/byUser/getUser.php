@@ -32,6 +32,7 @@ return function (App $app) {
                 "first_name" => $result->M_first_name,
                 "last_name" => $result->M_last_name,
                 "role_id" => $result->M_role_id,
+                "persona_id" => $result->M_persona_id
             );
 
             date_default_timezone_set('Asia/Bangkok');
