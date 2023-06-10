@@ -29,11 +29,14 @@ return function (App $app){
             if($run->getterCount()){
                 $data_vacation = $run->getterResult();
                 foreach($data_vacation as $data){
-                    $member_wait = $data->V_wait;
-                    $member_wait = $member_wait . $member_approve_id . " ";
-                    $sql = "UPDATE vacation SET V_wait = '$member_wait' WHERE V_id = '$data->V_id'";
-                    $run = new Update($sql, $response);
-                    $run->evaluate();
+                    $type = $data->V_special_leave ? "special" : ($data->V_sick_leave ? "sick" : "business");
+                    if($type == $type_leave) {
+                        $member_wait = $data->V_wait;
+                        $member_wait = $member_wait . $member_approve_id . " ";
+                        $sql = "UPDATE vacation SET V_wait = '$member_wait' WHERE V_id = '$data->V_id'";
+                        $run = new Update($sql, $response);
+                        $run->evaluate();
+                    }
                 }
             }
 
