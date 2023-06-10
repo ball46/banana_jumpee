@@ -198,7 +198,6 @@ return function (App $app) {
                     $member = $member . $data->SM_member_approve_id . " ";
                 }
             }else{
-                echo $run->getterCount();
                 $response->getBody()->write(json_encode("your member allow in " . $type .
                     " type leave is not enough"));
                 return $response
