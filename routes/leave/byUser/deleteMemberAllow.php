@@ -49,7 +49,7 @@ return function (App $app){
             }
 
             $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id' AND V_status = '1' 
-                    AND V_count_allow > 0 AND FIND_IN_SET('$member_allow_id', V_allow) > 0";
+                    AND V_count_allow > 0 AND FIND_IN_SET('$member_allow_id', REPLACE(V_allow, ' ', ',')) > 0";
             $run = new GetAll($sql, $response);
             $run->evaluate();
             if($run->getterCount()) {

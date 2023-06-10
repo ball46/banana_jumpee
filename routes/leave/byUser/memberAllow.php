@@ -36,13 +36,13 @@ return function (App $app) {
         $member_allow = $data_vacation->V_allow;
         $member_allow = $member_allow == "" ? $member_allow_id . " " : $member_allow . $member_allow_id . " ";
 
-        if ($data_vacation->V_allow > 1) {
+        if ($data_vacation->V_count_allow > 1) {
             $sql = "UPDATE vacation SET V_allow = '$member_allow', V_wait = '$member', 
                     V_count_allow = V_count_allow - '1' WHERE V_id = '$vacation_id'";
             $run = new Update($sql, $response);
             $run->evaluate();
             return $run->return();
-        } else if ($data_vacation->V_allow == 1) {
+        } else if ($data_vacation->V_count_allow == 1) {
             $sql = "UPDATE vacation SET V_allow = '$member_allow', V_wait = '$member',
                     V_count_allow = '0' WHERE V_id = '$vacation_id'";
             $run = new Update($sql, $response);

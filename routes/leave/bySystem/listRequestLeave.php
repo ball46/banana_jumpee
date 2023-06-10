@@ -34,7 +34,7 @@ return function (App $app){
                 }
 
                 $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_applicant_id' AND V_status = '1'
-                        AND FIND_IN_SET('$member_id', V_wait) > 0";
+                        AND FIND_IN_SET('$member_id', REPLACE(V_wait, ' ', ',')) > 0";
                 $run = new GetAll($sql, $response);
                 $run->evaluate();
                 if($run->getterCount()){
@@ -43,25 +43,25 @@ return function (App $app){
                         $member_wait = $vacation->V_wait;
                         $member_wait = explode(" ", $member_wait);
                         array_pop($member_wait);
-                        $allow = [];
+                        $wait = [];
 
                         $member_allow = $vacation->V_allow;
                         $member_allow = explode(" ", $member_allow);
-                        array_pop($member_wait);
-                        $wait = [];
+                        array_pop($member_allow);
+                        $allow = [];
 
                         foreach ($member_wait as $member){
                             $sql = "SELECT * FROM member WHERE M_id = '$member'";
                             $run = new Get($sql, $response);
                             $run->evaluate();
-                            $allow[] = $run->getterResult();
+                            $wait[] = $run->getterResult();
                         }
 
                         foreach ($member_allow as $member){
                             $sql = "SELECT * FROM member WHERE M_id = '$member'";
                             $run = new Get($sql, $response);
                             $run->evaluate();
-                            $wait[] = $run->getterResult();
+                            $allow[] = $run->getterResult();
                         }
 
                         $send[] = array(
