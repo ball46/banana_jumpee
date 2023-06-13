@@ -5,8 +5,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->get('/face/time/in/out/{member_id}', function (Request $request, Response $response, array $args) {
-        $member_id = $args['member_id'];
+    $app->get('/face/time/in/out', function (Request $request, Response $response) {
+        $member_id = (json_decode($request->getBody()))->member_id;
 
         date_default_timezone_set('Asia/Bangkok');
         $current_timestamp = time();

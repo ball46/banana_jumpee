@@ -6,9 +6,10 @@ use Slim\App;
 use Firebase\JWT\JWT;
 
 return function (App $app) {
-    $app->get('/user/login/{email}/{password}', function (Request $request, Response $response, array $args) {
-        $email = $args['email'];
-        $password = $args['password'];
+    $app->get('/user/login', function (Request $request, Response $response) {
+        $data = json_decode($request->getBody());
+        $email = $data->email;
+        $password = $data->password;
 
         $sql = "SELECT * FROM member WHERE M_email = '$email'";
         $run = new Get($sql, $response);

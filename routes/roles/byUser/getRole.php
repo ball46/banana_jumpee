@@ -5,8 +5,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->get('/role/user/{id}', function (Request $request, Response $response, array $args) {
-        $id = $args['id'];
+    $app->get('/role/user', function (Request $request, Response $response) {
+        $id = (json_decode($request->getBody()))->role_id;
         $sql = "SELECT * FROM role WHERE R_id = '$id'";
 
         $run = new Get($sql, $response);

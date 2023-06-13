@@ -5,11 +5,11 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->get('/leave/list/history/{member_id}/{limit}/{offset}',
-        function (Request $request, Response $response, array $args) {
-            $member_id = $args['member_id'];
-            $limit = $args['limit'];
-            $offset = $args['offset'];
+    $app->get('/leave/list/history', function (Request $request, Response $response) {
+            $data = json_decode($request->getBody());
+            $member_id = $data->member_id;
+            $limit = $data->limit;
+            $offset = $data->offset;
 
             $send = [];
 

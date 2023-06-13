@@ -5,9 +5,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->get('/leave/count/list/history/{member_id}',
-        function (Request $request, Response $response, array $args) {
-            $member_id = $args['member_id'];
+    $app->get('/leave/count/list/history', function (Request $request, Response $response) {
+            $member_id = (json_decode($request->getBody()))->member_id;
 
             $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id'";
             $run = new GetAll($sql, $response);

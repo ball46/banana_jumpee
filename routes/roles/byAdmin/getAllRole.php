@@ -5,10 +5,10 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->get('/role/show/all/{id}', function (Request $request, Response $response, array $args) {
-        $id = $args['id'];
+    $app->get('/role/show/all', function (Request $request, Response $response) {
+        $member_id = (json_decode($request->getBody()))->member_id;
 
-        $sql = "SELECT * FROM member WHERE M_id = '$id'";
+        $sql = "SELECT * FROM member WHERE M_id = '$member_id'";
         $run = new Get($sql, $response);
         $run->evaluate();
         $result = $run->getterResult();
