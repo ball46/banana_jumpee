@@ -18,7 +18,7 @@ return function (App $app) {
         $roleId = $data->roleid;
         $max_leave_id = $data->max_leave_id;
         $persona_id = $data->persona_id;
-        $admin = $data->admin ?? false;
+        $admin = $data->admin ?? 0;
 
         if (!$email || !$password) {
             $error = array(
