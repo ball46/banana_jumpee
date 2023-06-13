@@ -15,10 +15,10 @@ return function (App $app) {
         $time_period = $data->time_period;
         $start_date = $data->start_date;
         $end_date = $data->end_date;
-        $start_time = $time_period != "all day" ? $data->start_time : "00.00.00";
-        $end_time = $time_period != "all day" ? $data->end_time : "00.00.00";
+        $start_time = $time_period != "all day" ? $data->start_time : "00:00:00";
+        $end_time = $time_period != "all day" ? $data->end_time : "00:00:00";
         $sick_leave = $data->sick_leave;
-        $sick_file = $data->sick_file ?? NULL;
+        $sick_file = $data->sick_file ?? "";
         $special_leave = $data->special_leave;
 
         //create time by php
