@@ -23,17 +23,24 @@ return function (App $app) {
         $result = $run->getterResult();
 
         if ($result->M_status == 1) {
+
+            $sql = "SELECT * FROM memberimage WHERE  MI_member_id = $result->M_id";
+            $run = new Get($sql, $response);
+            $run->evaluate();
+            $image_name = ($run->getterResult())->MI_image_name;
             //create token
             $payload = array(
                 "id" => $result->M_id,
                 "admin" => $result->M_admin,
-                "email" => $result->M_email,
-                "username" => $result->M_username,
-                "display_name" => $result->M_display_name,
-                "first_name" => $result->M_first_name,
-                "last_name" => $result->M_last_name,
                 "role_id" => $result->M_role_id,
                 "persona_id" => $result->M_persona_id
+            );
+
+            $data_send = array(
+                "image name" => $image_name,
+                "admin" => $result->M_admin,
+                "username" => $result->M_username,
+                "display_name" => $result->M_display_name,
             );
 
             date_default_timezone_set('Asia/Bangkok');
@@ -51,7 +58,11 @@ return function (App $app) {
             $jwt = JWT::encode($payload, "my_secret_key", 'HS256');
 
             if (password_verify($password, $result->M_password)) {
-                $response->getBody()->write(json_encode($jwt));
+                $send = array(
+                    'token' => $jwt,
+                    'data' => $data_send
+                );
+                $response->getBody()->write(json_encode($send));
                 return $response
                     ->withHeader('content-type', 'application/json')
                     ->withStatus(200);

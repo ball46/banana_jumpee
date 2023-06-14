@@ -1,12 +1,15 @@
 <?php
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->get('/face/time/in/out', function (Request $request, Response $response) {
-        $member_id = (json_decode($request->getBody()))->member_id;
+    $app->get('/face/time/in/out/{token}', function (Request $request, Response $response, array $args) {
+        $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        $member_id = $token->id;
 
         date_default_timezone_set('Asia/Bangkok');
         $current_timestamp = time();

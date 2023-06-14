@@ -28,16 +28,16 @@ return function (App $app){
             $run->evaluate();
             $count_member_allow_type = $run->getterCount();
 
-            $sql = "SELECT * FROM maxleave WHERE ML_id = '$data_member->M_max_leave_id'";
+            $sql = "SELECT * FROM allowcount";
             $run = new Get($sql, $response);
             $run->evaluate();
             $result = $run->getterResult();
             if ($data_member_allow->SM_type_leave == "business") {
-                $max_allow = $result->ML_business_leave;;
+                $max_allow = $result->A_business;
             } else if ($data_member_allow->SM_type_leave == "sick") {
-                $max_allow = $result->ML_sick_leave;
+                $max_allow = $result->A_sick;
             } else {
-                $max_allow = $result->ML_special_leave;
+                $max_allow = $result->A_special;
             }
 
             if ($count_member_allow_type == $max_allow) {
@@ -66,6 +66,28 @@ return function (App $app){
                     }
                     $sql = "UPDATE vacation SET V_allow = '$member', V_count_allow = V_count_allow + 1 
                         WHERE V_id = '$data->V_id'";
+                    $run = new Update($sql, $response);
+                    $run->evaluate();
+                }
+            }
+
+            $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id' AND V_status = '1' 
+                    AND V_count_allow > 0 AND FIND_IN_SET('$member_allow_id', REPLACE(V_wait, ' ', ',')) > 0";
+            $run = new GetAll($sql, $response);
+            $run->evaluate();
+            if($run->getterCount()) {
+                $array_data = $run->getterResult();
+                foreach ($array_data as $data) {
+                    $member_wait = $data->V_wait;
+                    $member_wait = explode(" ", $member_wait);
+                    array_pop($member_wait);
+                    $location = array_search($member_allow_id, $member_wait);
+                    array_splice($member_wait, $location, 1);
+                    $member = "";
+                    foreach ($member_wait as $data_wait) {
+                        $member = $member . $data_wait . " ";
+                    }
+                    $sql = "UPDATE vacation SET V_wait = '$member' WHERE V_id = '$data->V_id'";
                     $run = new Update($sql, $response);
                     $run->evaluate();
                 }

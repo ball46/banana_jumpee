@@ -1,21 +1,24 @@
 <?php
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
-return function (App $app){
-    $app->get('/leave/list/request/leave', function (Request $request, Response $response) {
-            $member_id = (json_decode($request->getBody()))->member_id;
+return function (App $app) {
+    $app->get('/leave/list/request/leave/{token}', function (Request $request, Response $response, array $args) {
+        $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        $member_id = $token->id;
 
         $send = [];
 
         $sql = "SELECT * FROM memberallow WHERE SM_member_approve_id = '$member_id'";
         $run = new GetAll($sql, $response);
         $run->evaluate();
-        if($run->getterCount()){
+        if ($run->getterCount()) {
             $data_allow = $run->getterResult();
-            foreach($data_allow as $data){
+            foreach ($data_allow as $data) {
                 $member_applicant_id = $data->SM_member_applicant_id;
                 $type = $data->SM_type_leave;
 
@@ -24,11 +27,11 @@ return function (App $app){
                 $run->evaluate();
                 $data_count = $run->getterResult();
 
-                if($type == "business"){
+                if ($type == "business") {
                     $max_count = $data_count->A_business;
-                }else if($type == "sick"){
+                } else if ($type == "sick") {
                     $max_count = $data_count->A_sick;
-                }else{
+                } else {
                     $max_count = $data_count->A_special;
                 }
 
@@ -36,9 +39,9 @@ return function (App $app){
                         AND FIND_IN_SET('$member_id', REPLACE(V_wait, ' ', ',')) > 0";
                 $run = new GetAll($sql, $response);
                 $run->evaluate();
-                if($run->getterCount()){
+                if ($run->getterCount()) {
                     $data_vacation = $run->getterResult();
-                    foreach ($data_vacation as $vacation){
+                    foreach ($data_vacation as $vacation) {
                         $member_wait = $vacation->V_wait;
                         $member_wait = explode(" ", $member_wait);
                         array_pop($member_wait);
@@ -49,14 +52,14 @@ return function (App $app){
                         array_pop($member_allow);
                         $allow = [];
 
-                        foreach ($member_wait as $member){
+                        foreach ($member_wait as $member) {
                             $sql = "SELECT * FROM member WHERE M_id = '$member'";
                             $run = new Get($sql, $response);
                             $run->evaluate();
                             $wait[] = $run->getterResult();
                         }
 
-                        foreach ($member_allow as $member){
+                        foreach ($member_allow as $member) {
                             $sql = "SELECT * FROM member WHERE M_id = '$member'";
                             $run = new Get($sql, $response);
                             $run->evaluate();
@@ -77,7 +80,7 @@ return function (App $app){
             return $response
                 ->withHeader('content-type', 'application/json')
                 ->withStatus(200);
-        }else{
+        } else {
             $response->getBody()->write(json_encode("You not have requested allow for leave"));
             return $response
                 ->withHeader('content-type', 'application/json')
