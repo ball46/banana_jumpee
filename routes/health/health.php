@@ -8,6 +8,10 @@ return function (App $app) {
     $routes($app);
 
     //call get health
-    $routes = require __DIR__ . '/getHealth.php';
+    $routes = require __DIR__ . '/getCurrentHealth.php';
+    $routes($app);
+
+    //call get list history health
+    $routes = require __DIR__ . '/getHistoryHealth.php';
     $routes($app);
 };
