@@ -43,6 +43,27 @@ return function (App $app) {
         $can_leave = 1;
         $type = "";
 
+        $sql = "SELECT * FROM member WHERE M_id = '$member_id'";
+        $run = new Get($sql, $response);
+        $run->evaluate();
+        $data_member = $run->getterResult();
+
+        $sql = "SELECT * FROM maxleave WHERE ML_id = '$data_member->M_max_leave_id'";
+        $run = new Get($sql, $response);
+        $run->evaluate();
+        $result = $run->getterResult();
+        $max_business = $result->ML_business_leave;
+        $max_sick = $result->ML_sick_leave;
+        $max_special = $result->ML_special_leave;
+        $range_leave = $result->ML_range_leave;
+
+        if($day > $range_leave){
+            $response->getBody()->write(json_encode("your leave is more than your range leave"));
+            return $response
+                ->withHeader('content-type', 'application/json')
+                ->withStatus(403);
+        }
+
         date_default_timezone_set('Asia/Bangkok');
         $current_timestamp = time();
         $now_year = date("Y", $current_timestamp);
@@ -99,19 +120,6 @@ return function (App $app) {
                 $sql_status = "UPDATE countleave SET C_status = '0' WHERE C_id = '$data_leave->C_id'";
                 $change = 1;
             }
-
-            $sql = "SELECT * FROM member WHERE M_id = '$member_id'";
-            $run = new Get($sql, $response);
-            $run->evaluate();
-            $data_member = $run->getterResult();
-
-            $sql = "SELECT * FROM maxleave WHERE ML_id = '$data_member->M_max_leave_id'";
-            $run = new Get($sql, $response);
-            $run->evaluate();
-            $result = $run->getterResult();
-            $max_business = $result->ML_business_leave;
-            $max_sick = $result->ML_sick_leave;
-            $max_special = $result->ML_special_leave;
 
             if ($special_leave) {
                 if ($day <= $max_special + $old_special_leave) {
