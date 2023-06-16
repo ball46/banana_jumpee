@@ -69,7 +69,7 @@ return function (App $app) {
                 'status' => $status,
                 'holiday' => $holiday_name,
                 'leave' => $vacation_name,
-                'leave data' => $data_vacation
+                'leave_data' => $data_vacation
             );
         }
 

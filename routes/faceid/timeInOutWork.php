@@ -16,8 +16,8 @@ return function (App $app) {
         $now_date = date("Y-m-d", $current_timestamp);
 
         $time = array(
-            'time in' => "",
-            'time out' => ""
+            'time-in' => "",
+            'time-out' => ""
         );
 
         $sql = "SELECT * FROM faceid WHERE F_member_id = '$member_id' AND F_date = '$now_date'";
@@ -27,9 +27,9 @@ return function (App $app) {
             $data_history = $run->getterResult();
             foreach ($data_history as $data){
                 if($data->F_in_out){
-                    $time['time in'] = $data->F_time;
+                    $time['time-in'] = $data->F_time;
                 }else{
-                    $time['time out'] = $data->F_time;
+                    $time['time-out'] = $data->F_time;
                 }
             }
         }

@@ -39,25 +39,25 @@ return function (App $app) {
 
             $data_weight = array(
                 'weight' => $data_health->H_weight,
-                'ideal weight' => $data_health->H_ideal_weight,
-                'weight control' => $data_health->H_weight_control
+                'ideal_weight' => $data_health->H_ideal_weight,
+                'weight_control' => $data_health->H_weight_control
             );
 
             $data_fat = array(
-                'fat mass' => $data_health->H_fat_mass,
-                'fat rate' => $data_health->H_fat_rate,
-                'visceral fat' => $data_health->H_visceral_fat
+                'fat_mass' => $data_health->H_fat_mass,
+                'fat_rate' => $data_health->H_fat_rate,
+                'visceral_fat' => $data_health->H_visceral_fat
             );
 
             $data_moisture = array(
-                'all moisture' => $data_health->H_all_moisture,
+                'all_moisture' => $data_health->H_all_moisture,
                 'moisture' => $data_health->H_moisture
             );
 
             $data_protein = array(
                 'protein' => $data_health->H_protein,
-                'extracellular fluid' => $data_health->H_extracellular_fluid,
-                'intracellular fluid' => $data_health->H_intracellular_fluid
+                'extracellular-fluid' => $data_health->H_extracellular_fluid,
+                'intracellular_fluid' => $data_health->H_intracellular_fluid
             );
 
             $send[] = array(
@@ -65,12 +65,12 @@ return function (App $app) {
                 'weight' => $data_weight,
                 'temperature' => $data_health->H_temperature,
                 'fat' => $data_fat,
-                'basal metabolism' => $data_health->H_basal_metabolism,
+                'basal_metabolism' => $data_health->H_basal_metabolism,
                 'water' => $data_moisture,
-                'skeletal muscle' => $data_health->H_skeletal_muscle,
+                'skeletal_muscle' => $data_health->H_skeletal_muscle,
                 'bone mineral' => $data_health->H_bone_mineral,
                 'protein' => $data_protein,
-                'inorganic salt' => $data_health->H_inorganic_salt
+                'inorganic_salt' => $data_health->H_inorganic_salt
             );
         }
 
