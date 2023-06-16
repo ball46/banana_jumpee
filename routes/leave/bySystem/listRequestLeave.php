@@ -11,7 +11,7 @@ return function (App $app) {
         $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
         $member_id = $token->id;
 
-        $send = [];
+        $send_data = [];
 
         $sql = "SELECT * FROM memberallow WHERE SM_member_approve_id = '$member_id'";
         $run = new GetAll($sql, $response);
@@ -42,40 +42,22 @@ return function (App $app) {
                 if ($run->getterCount()) {
                     $data_vacation = $run->getterResult();
                     foreach ($data_vacation as $vacation) {
-                        $member_wait = $vacation->V_wait;
-                        $member_wait = explode(" ", $member_wait);
-                        array_pop($member_wait);
-                        $wait = [];
-
-                        $member_allow = $vacation->V_allow;
-                        $member_allow = explode(" ", $member_allow);
-                        array_pop($member_allow);
-                        $allow = [];
-
-                        foreach ($member_wait as $member) {
-                            $sql = "SELECT * FROM member WHERE M_id = '$member'";
-                            $run = new Get($sql, $response);
-                            $run->evaluate();
-                            $wait[] = $run->getterResult();
-                        }
-
-                        foreach ($member_allow as $member) {
-                            $sql = "SELECT * FROM member WHERE M_id = '$member'";
-                            $run = new Get($sql, $response);
-                            $run->evaluate();
-                            $allow[] = $run->getterResult();
-                        }
-
-                        $send[] = array(
-                            'vacation' => $vacation,
+                        $send_data[] = array(
+                            'vid' => $vacation->V_id,
+                            'vacation' => $vacation->V_title,
                             'type' => $type,
-                            'allow' => $allow,
-                            'wait' => $wait,
+                            'start_date' => $vacation->V_start_date,
+                            'end_date' => $vacation->V_end_date,
+                            'allow' => $max_count - $vacation->V_count_allow,
                             'max_count' => $max_count
                         );
                     }
                 }
             }
+            $send = array(
+                'num' => count($send_data),
+                'data' => $send_data
+            );
             $response->getBody()->write(json_encode($send));
             return $response
                 ->withHeader('content-type', 'application/json')

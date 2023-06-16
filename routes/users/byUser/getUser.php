@@ -37,7 +37,7 @@ return function (App $app) {
             );
 
             $data_send = array(
-                "image name" => $image_name,
+                "image_name" => $image_name,
                 "admin" => $result->M_admin == 1,
                 "username" => $result->M_username,
                 "display_name" => $result->M_display_name,
