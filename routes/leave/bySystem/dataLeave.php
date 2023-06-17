@@ -30,7 +30,6 @@ return function (App $app) {
         $data_send = [];
 
         foreach ($mergedArray as $member) {
-            echo $member;
             $approve = in_array($member, $member_allow);
 
             $sql = "SELECT * FROM member WHERE M_id = '$member'";

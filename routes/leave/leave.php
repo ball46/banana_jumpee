@@ -8,7 +8,7 @@ return function (App $app) {
     $routes($app);
 
     //call get data leave
-    $routes = require __DIR__ . '/bySystem/dataRequestLeave.php';
+    $routes = require __DIR__ . '/bySystem/dataLeave.php';
     $routes($app);
 
     //call get list history leave
