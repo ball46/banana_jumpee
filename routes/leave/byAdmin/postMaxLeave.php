@@ -1,18 +1,22 @@
 <?php
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->post('/leave/post/new/max/count', function (Request $request, Response $response) {
+    $app->post('/leave/post/new/max/count/{token}', function (Request $request, Response $response, array $args) {
+        $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        $admin = $token->admin;
+
         $data = json_decode($request->getBody());
         $position = $data->position;
         $business = $data->business_leave;
         $sick = $data->sick_leave;
         $special = $data->special_leave;
         $username = $data->username;
-        $admin = $data->admin;
 
         if($admin){
             $sql = "INSERT INTO maxleave (ML_position, ML_business_leave, ML_sick_leave, ML_special_leave, ML_upd_by) 

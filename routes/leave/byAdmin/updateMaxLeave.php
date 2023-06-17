@@ -1,11 +1,16 @@
 <?php
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->put('/leave/update/max/count', function (Request $request, Response $response) {
+    $app->put('/leave/update/max/count/{token}', function (Request $request, Response $response, array $args) {
+        $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        $admin = $token->admin;
+
         $data = json_decode($request->getBody());
         $id = $data->id;
         $position = $data->position;
@@ -13,7 +18,6 @@ return function (App $app) {
         $sick = $data->sick_leave;
         $special = $data->special_leave;
         $username = $data->username;
-        $admin = $data->admin;
 
         if($admin){
             $sql = "UPDATE maxleave SET ML_position = '$position', ML_business_leave = '$business', 

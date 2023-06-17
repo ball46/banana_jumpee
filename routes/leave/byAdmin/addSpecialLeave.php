@@ -1,11 +1,16 @@
 <?php
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app){
-    $app->post('/leave/add/special/leave', function (Request $request, Response $response) {
+    $app->post('/leave/add/special/leave/{token}', function (Request $request, Response $response, array $args) {
+        $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        $admin = $token->admin;
+
         $data = json_decode($request->getBody());
         $member_id = $data->member_id;
         $title = $data->title;
@@ -15,7 +20,6 @@ return function (App $app){
         $start_time = $data->start_time;
         $end_time = $data->end_time;
         $day_special = $data->day_special;
-        $admin = $data->admin;
 
         date_default_timezone_set('Asia/Bangkok');
         $current_timestamp = time();
