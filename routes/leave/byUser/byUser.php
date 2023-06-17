@@ -22,4 +22,8 @@ return function (App $app) {
     //call to post member allow
     $routes = require __DIR__ . '/postMemberAllow.php';
     $routes($app);
+
+    //call to get members is not choose in select type
+    $routes = require __DIR__ . '/searchBarMemberAllow.php';
+    $routes($app);
 };

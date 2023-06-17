@@ -3,7 +3,7 @@
 use Slim\App;
 
 return function (App $app) {
-    //call to update count leave
+    //call api in folder byAdmin
     $routes = require __DIR__ . '/byAdmin/byAdmin.php';
     $routes($app);
 
