@@ -1,13 +1,17 @@
 <?php
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->post('/leave/new/post', function (Request $request, Response $response) {
+    $app->post('/leave/new/post/{token}', function (Request $request, Response $response, array $args) {
+        $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        $member_id = $token->id;
+
         $data = json_decode($request->getBody());
-        $member_id = $data->member_id;
         $title = $data->title;
         $detail = $data->detail;
         $location = $data->location;

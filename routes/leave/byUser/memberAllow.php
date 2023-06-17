@@ -1,13 +1,17 @@
 <?php
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->put('/leave/member/allow', function (Request $request, Response $response) {
+    $app->put('/leave/member/allow/{token}', function (Request $request, Response $response, array $args) {
+        $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        $member_allow_id = $token->id;
+
         $data = json_decode($request->getBody());
-        $member_allow_id = $data->member_allow_id;
         $vacation_id = $data->vacation_id;
 
         $sql_log = "INSERT INTO allowlog (AL_member_allow_id, AL_vacation_id) 

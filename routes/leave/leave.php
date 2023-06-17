@@ -3,59 +3,15 @@
 use Slim\App;
 
 return function (App $app) {
-    //call get count list
-    $routes = require __DIR__ . '/bySystem/countHistoryLeave.php';
-    $routes($app);
-
-    //call get data leave
-    $routes = require __DIR__ . '/bySystem/dataLeave.php';
-    $routes($app);
-
-    //call get list history leave
-    $routes = require __DIR__ . '/bySystem/listLeaveHistory.php';
-    $routes($app);
-
-    //call get list who want to leave by this member id
-    $routes = require __DIR__ . '/bySystem/listRequestLeave.php';
-    $routes($app);
-
-    //call to get leave day all types to show on the dashboard
-    $routes = require __DIR__ . '/bySystem/showLeaveDay.php';
-    $routes($app);
-
-    //call check status leave
-    $routes = require __DIR__ . '/bySystem/statusLeave.php';
-    $routes($app);
-
     //call to update count leave
-    $routes = require __DIR__ . '/byAdmin/updateMaxLeave.php';
+    $routes = require __DIR__ . '/byAdmin/byAdmin.php';
     $routes($app);
 
-    //call add special days
-    $routes = require __DIR__ . '/byAdmin/addSpecialLeave.php';
+    //call api in folder bySystem
+    $routes = require __DIR__ . '/bySystem/bySystem.php';
     $routes($app);
 
-    //call add new position max leave
-    $routes = require __DIR__ . '/byAdmin/postMaxLeave.php';
-    $routes($app);
-
-    //call to delete member allow
-    $routes = require __DIR__ . '/byUser/deleteMemberAllow.php';
-    $routes($app);
-
-    //call to get member allow
-    $routes = require __DIR__ . '/byUser/getMemberAllow.php';
-    $routes($app);
-
-    //call add new position max leave
-    $routes = require __DIR__ . '/byUser/memberAllow.php';
-    $routes($app);
-
-    //call leave work
-    $routes = require __DIR__ . '/byUser/postLeave.php';
-    $routes($app);
-
-    //call to post member allow
-    $routes = require __DIR__ . '/byUser/postMemberAllow.php';
+    //call api in folder byUser
+    $routes = require __DIR__ . '/byUser/byUser.php';
     $routes($app);
 };
