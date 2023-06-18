@@ -8,7 +8,18 @@ use Slim\App;
 
 return function (App $app) {
     $app->get('/leave/count/list/history/{token}', function (Request $request, Response $response, array $args) {
-        $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        try {
+            $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        }catch (Exception $e){
+            $response->getBody()->write(json_encode(array(
+                "error_message" => "Invalid token",
+                "message" => $e->getMessage()
+            )));
+
+            return $response
+                ->withHeader('content-type', 'application/json')
+                ->withStatus(401);
+        }
         $member_id = $token->id;
 
         $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id'";
