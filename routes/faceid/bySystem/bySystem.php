@@ -3,6 +3,10 @@
 use Slim\App;
 
 return function (App $app) {
+    //to get data attendants in current month
+    $routes = require __DIR__ . '/attendanceStatistics.php';
+    $routes($app);
+
     //check last time
     $routes = require __DIR__ . '/checkLastTime.php';
     $routes($app);

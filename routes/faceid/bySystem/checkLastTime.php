@@ -7,6 +7,7 @@ use Slim\App;
 return function (App $app) {
     $app->put('/face/check/last', function (Request $request, Response $response) {
         //create time by php
+        //TODO:change check rest day to have many day is not 1 day
         date_default_timezone_set('Asia/Bangkok');
         $current_timestamp = time();
         $scan_date = date("Y-m-d", $current_timestamp);
