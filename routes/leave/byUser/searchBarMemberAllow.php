@@ -7,12 +7,20 @@ use Slim\App;
 return function (App $app) {
     $app->get('/leave/search/bar', function (Request $request, Response $response) {
         $data = json_decode($request->getBody());
-        $member_allow_id = $data->member_allow_id;
-        $member_allow_id = implode(',', array_fill(0, count($member_allow_id), '?'));
+        $array_member_allow_id = $data->member_allow_id;
+        $string_member_allow = "";
+        foreach ($array_member_allow_id as $member_allow_id) {
+            $sql = "SELECT * FROM memberallow WHERE SM_id = $member_allow_id";
+            $run = new Get($sql, $response);
+            $run->evaluate();
+            $data_allow = $run->getterResult();
+            $string_member_allow = $string_member_allow . $data_allow->SM_member_approve_id . ", ";
+        }
+        $string_member_allow = substr($string_member_allow, 0, -2);
 
         $data_send = [];
 
-        $sql = "SELECT * FROM member WHERE M_id NOT IN ($member_allow_id)";
+        $sql = "SELECT * FROM member WHERE M_id NOT IN ($string_member_allow)";
         $run = new GetAll($sql, $response);
         $run->evaluate();
         if ($run->getterCount()) {
