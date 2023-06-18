@@ -8,7 +8,18 @@ use Slim\App;
 
 return function (App $app) {
     $app->get('/face/time/in/out/{token}', function (Request $request, Response $response, array $args) {
-        $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        try {
+            $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        }catch (Exception $e){
+            $response->getBody()->write(json_encode(array(
+                "error_message" => "Invalid token",
+                "message" => $e->getMessage()
+            )));
+
+            return $response
+                ->withHeader('content-type', 'application/json')
+                ->withStatus(401);
+        }
         $member_id = $token->id;
 
         date_default_timezone_set('Asia/Bangkok');
