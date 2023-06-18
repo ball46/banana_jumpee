@@ -15,6 +15,10 @@ return function (App $app) {
     $routes = require __DIR__ . '/countFaceOnMonth.php';
     $routes($app);
 
+    //get history data time and temperature
+    $routes = require __DIR__ . '/historyTimeTemp.php';
+    $routes($app);
+
     //get temperature in out work in current date
     $routes = require __DIR__ . '/temperatureInOutWork.php';
     $routes($app);
