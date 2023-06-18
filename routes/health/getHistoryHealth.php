@@ -1,18 +1,33 @@
 <?php
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
 return function (App $app) {
-    $app->get('/health/get/list/history', function (Request $request, Response $response) {
+    $app->get('/health/get/list/history/{token}', function (Request $request, Response $response, array $args) {
+        try {
+            $token = jwt::decode($args['token'], new Key("my_secret_key", 'HS256'));
+        }catch (Exception $e){
+            $response->getBody()->write(json_encode(array(
+                "error_message" => "Invalid token",
+                "message" => $e->getMessage()
+            )));
+
+            return $response
+                ->withHeader('content-type', 'application/json')
+                ->withStatus(401);
+        }
+        $persona_id = $token->persona_id;
+
         $data = json_decode($request->getBody());
-        $persona_id = $data->persona_id;
         $start_date = $data->start_date;
         $end_date = $data->end_date;
+
         $sql = "SELECT * FROM health WHERE H_member_id = '$persona_id' AND 
                 DATE(H_cr_date) BETWEEN '$start_date' AND '$end_date'";
-
         $run = new GetAll($sql, $response);
         $run->evaluate();
         $array_data_health = $run->getterResult();
