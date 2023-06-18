@@ -7,7 +7,7 @@ class Update
     private string $sql;
     private Response $response;
     private mixed $result = null; // Initialize the $result property
-    private mixed $error;
+    private mixed $error = null;
     private int $count = -1;
 
     public function __construct(string $sql, Response $response)
@@ -36,7 +36,12 @@ class Update
 
     public function return(): Response
     {
-        try {
+        if($this->error != null) {
+            $this->response->getBody()->write(json_encode($this->error));
+            return $this->response
+                ->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+        }else {
             if ($this->count != 0) {
                 $this->response->getBody()->write(json_encode($this->result));
                 return $this->response
@@ -48,11 +53,6 @@ class Update
                     ->withHeader('content-type', 'application/json')
                     ->withStatus(404);
             }
-        } catch (PDOException) {
-            $this->response->getBody()->write(json_encode($this->error));
-            return $this->response
-                ->withHeader('content-type', 'application/json')
-                ->withStatus(500);
         }
     }
 }
