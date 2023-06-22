@@ -39,8 +39,8 @@ return function (App $app) {
                 $date = explode("-", $date);
                 $date_ask_to_leave = array(
                     'year' => $date[0],
-                    'month' => $date[1],
-                    'day' => $date[2],
+                    'month' => ltrim($date[1], '0'),
+                    'day' => ltrim($date[2], '0'),
                 );
 
                 $sql = "SELECT * FROM allowcount";
