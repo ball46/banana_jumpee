@@ -57,7 +57,8 @@ return function (App $app) {
             $run = new Update($sql, $response);
             $run->evaluate();
             return $run->return();
-        } else if ($data_vacation->V_count_allow == 1) {
+        }
+        else if ($data_vacation->V_count_allow == 1) {
             $sql = "UPDATE vacation SET V_allow = '$member_allow', V_wait = '$member',
                     V_count_allow = '0' WHERE V_id = '$vacation_id'";
             $run = new Update($sql, $response);
@@ -77,57 +78,51 @@ return function (App $app) {
                         WHERE F_member_id = '$member_id' AND F_date BETWEEN '$start_date' AND '$end_date'";
                 $run = new GetAll($sql, $response);
                 $run->evaluate();
-                $result = $run->getterResult();
+                $data_face_scan = $run->getterResult();
 
                 if ($data_vacation->V_time_period != "all day") {
-                    foreach ($result as $data) {
-                        $id = $data->F_id;
-                        $temperature = $data->F_temperature;
-                        $in_out = $data->F_in_out;
-                        $device_ip = $data->F_device_ip;
-                        $device_key = $data->F_device_key;
-                        $date_name = $data->F_date_name;
-                        $timestamp_by_device = $data->F_timestamp_by_device;
-
-                        if ($in_out && ($data->work == "normal" || $data->work == "late")) {
-                            $work = "normal_leave";
-                            $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
-                                $date_name, $now_date, $now_time, $now_timestamp, $timestamp_by_device, $work, $id);
-                            $cal->scan_again();
-                            $sql = $cal->getterSQL();
-                            $run = new Update($sql, $response);
-                            $run->evaluate();
-                        } else if (!$in_out && ($data->work == "saot" || $data->work == "normal")) {
-                            $work = "OT";
-                            $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
-                                $date_name, $now_date, $now_time, $now_timestamp, $timestamp_by_device, $work, $id);
-                            $cal->scan_again();
-                            $sql = $cal->getterSQL();
-                            $run = new Update($sql, $response);
-                            $run->evaluate();
-                        } else {
-                            $sql = "DELETE FROM faceid WHERE F_id = '$id'";
-                            $run = new Update($sql, $response);
-                            $run->evaluate();
-                        }
-                    }
-                } else {
-                    foreach ($result as $data) {
-                        $id = $data->F_id;
-                        $temperature = $data->F_temperature;
-                        $in_out = $data->F_in_out;
-                        $device_ip = $data->F_device_ip;
-                        $device_key = $data->F_device_key;
-                        $date_name = $data->F_date_name;
-                        $timestamp_by_device = $data->F_timestamp_by_device;
-                        $work = $data->F_work != "absent" ? "OT" : "leave";
-
-                        $cal = new Work($member_id, $temperature, $in_out, $device_ip, $device_key,
-                            $date_name, $now_date, $now_time, $now_timestamp, $timestamp_by_device, $work, $id);
-                        $cal->scan_again();
+                    foreach ($data_face_scan as $data) {
+                        $in = ($data->F_status_in == "normal" || $data->F_status_in == "late") ? "normal_leave" :
+                            ($data->F_status_in == "absent" ? "absent" : "OT");
+                        $cal = new Work($member_id, $data->F_temperature_in, $data->F_device_ip_in,
+                            $data->F_device_key_in, $data->F_date_name, $now_date, $now_time, $now_timestamp,
+                            $data->F_timestamp_by_device_in, $in, $data->F_id);
+                        $cal->fix_start_work_scan();
                         $sql = $cal->getterSQL();
                         $run = new Update($sql, $response);
                         $run->evaluate();
+
+                        $out = $data->F_status_out == "absent" ? null :
+                            ($data->F_status_out == "normal" ? "OT" : "normal_leave");
+                        $cal = new Work($member_id, $data->F_temperature_out, $data->F_device_ip_out,
+                            $data->F_device_key_out, $data->F_date_name, $now_date, $now_time, $now_timestamp,
+                            $data->F_timestamp_by_device_out, $out, $data->F_id);
+                        $cal->end_work_scan();
+                        $sql = $cal->getterSQL();
+                        $run = new Update($sql, $response);
+                        $run->evaluate();
+                    }
+                } else {
+                    foreach ($data_face_scan as $data) {
+                        $in = $data->F_status_in != "absent" ? "OT" : "leave";
+                        $cal = new Work($member_id, $data->F_temperature_in, $data->F_device_ip_in,
+                            $data->F_device_key_in, $data->F_date_name, $now_date, $now_time, $now_timestamp,
+                            $data->F_timestamp_by_device_in, $in, $data->F_id);
+                        $cal->fix_start_work_scan();
+                        $sql = $cal->getterSQL();
+                        $run = new Update($sql, $response);
+                        $run->evaluate();
+
+                        if($in != "leave") {
+                            $out = $data->F_status_out != "absent" ? "OT" : "leave";
+                            $cal = new Work($member_id, $data->F_temperature_out, $data->F_device_ip_out,
+                                $data->F_device_key_out, $data->F_date_name, $now_date, $now_time, $now_timestamp,
+                                $data->F_timestamp_by_device_out, $out, $data->F_id);
+                            $cal->end_work_scan();
+                            $sql = $cal->getterSQL();
+                            $run = new Update($sql, $response);
+                            $run->evaluate();
+                        }
                     }
                 }
             }

@@ -19,12 +19,9 @@ return function (App $app) {
         $run = new GetAll($sql, $response);
         $run->evaluate();
         $members = $run->getterResult();
-        $work = "";
-        $in_out = 1;
 
         //to check today is holiday or not
-        $sql = "SELECT * FROM holiday 
-                WHERE H_start_date <= '$scan_date' AND H_end_date >= '$scan_date' AND H_status = '1'";
+        $sql = "SELECT * FROM holiday WHERE '$scan_date' BETWEEN H_start_date AND H_end_date";
         $run = new Get($sql, $response);
         $run->evaluate();
         if ($run->getterCount()) {
@@ -35,9 +32,18 @@ return function (App $app) {
         } else {
             foreach ($members as $member) {
                 $member_id = $member->M_id;
-                $role_id = $member->M_role_id;
 
-                $sql = "SELECT * FROM role WHERE R_id = '$role_id'";
+                $sql = "SELECT * FROM faceid WHERE F_member_id = '$member_id' AND F_date = '$scan_date'";
+                $run = new GetAll($sql, $response);
+                $run->evaluate();
+                $have_data_face_or_not = $run->getterCount();
+                $data_face = $have_data_face_or_not ? $run->getterResult() : "";
+                if ($have_data_face_or_not && $data_face->F_time_out != null) {
+                    continue;
+                }
+
+                //normal case
+                $sql = "SELECT * FROM role WHERE R_id = '$member->M_role_id'";
                 $run = new Get($sql, $response);
                 $run->evaluate();
                 $data_role = $run->getterResult();
@@ -49,94 +55,60 @@ return function (App $app) {
                         break;
                     }
                 }
+                $work = $have_data_face_or_not ? ($rest_or_absent ? "OT" : "absent") :
+                    ($rest_or_absent ? "rest day" : "absent");
 
-                $sql = "SELECT * FROM faceid WHERE F_member_id = '$member_id' AND F_date = '$scan_date' 
-                    ORDER BY F_id DESC LIMIT 2";
-                $run = new GetAll($sql, $response);
-                $run->evaluate();
-                if ($run->getterCount() == 2) {
-                    continue;
-                } else if ($run->getterCount() == 1) {
-                    if ($member->M_leave) {
-                        $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id' AND V_status = '1'";
-                        $run = new Get($sql, $response);
-                        $run->evaluate();
-                        $data_leave = $run->getterResult();
-                        $start_date = $data_leave->V_start_date;
-                        $end_date = $data_leave->V_end_date;
-                        if ($scan_date >= $start_date && $scan_date <= $end_date) {
-                            continue;
-                        }
-                    }
-                    $in_out = 0;
-                    $work = "absent";
-
-                    $cal = new Work($member_id, 0, $in_out, "by api", "by api",
-                        $day_name, $scan_date, $scan_time, $scan_timestamp, $scan_timestamp, $work);
-                    $cal->first_scan();
-                    $sql = $cal->getterSQL();
-                    $run = new Update($sql, $response);
+                //profiling case
+                if ($member->M_profiling) {
+                    $profiling_day_work = 0;
+                    $sql = "SELECT * FROM datework WHERE D_member_id = '$member_id' 
+                            AND '$scan_date' BETWEEN D_start_date_work AND D_end_date_work";
+                    $run = new Get($sql, $response);
                     $run->evaluate();
-                } else {
-                    if ($member->M_leave) {
-                        $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id' AND V_status = '1'";
-                        $run = new Get($sql, $response);
-                        $run->evaluate();
-                        $data_leave = $run->getterResult();
-                        $start_date = $data_leave->V_start_date;
-                        $end_date = $data_leave->V_end_date;
-                        if ($scan_date >= $start_date && $scan_date <= $end_date) {
-                            $work = $data_leave->V_time_period == "all day" ? "leave" : "absent";
-                        }
-                        $cal = new Work($member_id, 0, $in_out, "by api", "by api",
-                            $day_name, $scan_date, $scan_time, $scan_timestamp, $scan_timestamp, $work);
-                        $cal->first_scan();
-                        $sql = $cal->getterSQL();
-                        $run = new Update($sql, $response);
-                        $run->evaluate();
-                        continue;
-                    }
-                    if ($member->M_profiling) {
-                        $sql = "SELECT * FROM datework WHERE D_member_id = '$member_id' AND D_status = '1'";
-                        $run = new Get($sql, $response);
-                        $run->evaluate();
+                    if ($run->getterCount()) {
                         $data_date_work = $run->getterResult();
-                        $start_date = $data_date_work->D_start_date_work;
-                        $end_date = $data_date_work->D_end_date_work;
-                        if ($scan_date >= $start_date && $scan_date <= $end_date) {
-                            if ($data_date_work->D_choose_date_name) {
-                                $days = explode(" ", $data_date_work->D_date_name);
-                                $date = $day_name;
-                            } else {
-                                $days = explode(" ", $data_date_work->D_date_num);
-                                $date = date("d", $current_timestamp);
-                            }
-                            foreach ($days as $day) {
-                                if ($day == $date) {
-                                    $work = "absent";
-                                    break;
-                                } else {
-                                    $work = "profiling";
-                                }
+                        if ($data_date_work->D_choose_date_name) {
+                            $days = explode(" ", $data_date_work->D_date_name);
+                            $date = $day_name;
+                        } else {
+                            $days = explode(" ", $data_date_work->D_date_num);
+                            $date = date("d", $current_timestamp);
+                        }
+                        foreach ($days as $day) {
+                            if ($day == $date) {
+                                $profiling_day_work = 1;
+                                break;
                             }
                         }
-                        $cal = new Work($member_id, 0, $in_out, "by api", "by api",
-                            $day_name, $scan_date, $scan_time, $scan_timestamp, $scan_timestamp, $work);
-                        $cal->first_scan();
-                        $sql = $cal->getterSQL();
-                        $run = new Update($sql, $response);
-                        $run->evaluate();
-                        continue;
-                    } else {
-                        $work = $rest_or_absent ? "rest day" : "absent";
+                        $work = $have_data_face_or_not ? ($profiling_day_work ? "absent" : "OT") :
+                            ($profiling_day_work ? "absent" : "profiling");
                     }
-                    $cal = new Work($member_id, 0, $in_out, "by api", "by api",
-                        $day_name, $scan_date, $scan_time, $scan_timestamp, $scan_timestamp, $work);
-                    $cal->first_scan();
-                    $sql = $cal->getterSQL();
-                    $run = new Update($sql, $response);
-                    $run->evaluate();
                 }
+
+                //leave case
+                if ($member->M_leave) {
+                    $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id' 
+                            AND '$scan_date' BETWEEN V_start_date AND V_end_date";
+                    $run = new Get($sql, $response);
+                    $run->evaluate();
+                    if ($run->getterCount()) {
+                        $data_leave = $run->getterResult();
+                        $work = $have_data_face_or_not ?
+                            ($data_leave->V_time_period == "all day" ? "OT" : "normal_leave") :
+                            ($data_leave->V_time_period == "all day" ? "leave" : "absent");
+                    }
+                }
+
+                $cal = new Work($member_id, 0, "by api", "by api",
+                    $day_name, $scan_date, $scan_time, $scan_timestamp, $scan_timestamp, $work);
+                if ($have_data_face_or_not) {
+                    $cal->end_work_scan();
+                } else {
+                    $cal->start_work_scan();
+                }
+                $sql = $cal->getterSQL();
+                $run = new Update($sql, $response);
+                $run->evaluate();
             }
             $response->getBody()->write(json_encode(true));
             return $response
