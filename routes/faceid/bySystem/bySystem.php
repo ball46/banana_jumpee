@@ -19,8 +19,16 @@ return function (App $app) {
     $routes = require __DIR__ . '/countFaceOnMonth.php';
     $routes($app);
 
+    //check line data in table face id
+    $routes = require __DIR__ . '/countHistoryFaceID.php';
+    $routes($app);
+
     //get history data time and temperature
     $routes = require __DIR__ . '/historyTimeTemp.php';
+    $routes($app);
+
+    //get all history data about member id
+    $routes = require __DIR__ . '/listFaceIDHistory.php';
     $routes($app);
 
     //get temperature in out work in current date
