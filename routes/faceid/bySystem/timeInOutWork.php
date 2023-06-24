@@ -36,8 +36,8 @@ return function (App $app) {
         $run->evaluate();
         if($run->getterCount()) {
             $data_history = $run->getterResult();
-            $time['timeIn'] = $data_history->F_time_in;
-            $time['timeOut'] = $data_history->F_time_out;
+            $time['timeIn'] = $data_history->F_time_in != null ? $data_history->F_time_in : $time['timeIn'];
+            $time['timeOut'] = $data_history->F_time_out != null ? $data_history->F_time_out : $time['timeOut'];
         }
 
         $response->getBody()->write(json_encode($time));

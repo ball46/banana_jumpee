@@ -26,7 +26,7 @@ return function (App $app) {
         $current_timestamp = time();
         $now_date = date("Y-m-d", $current_timestamp);
 
-        $time = array(
+        $temperature = array(
             'temperatureIn' => "none",
             'temperatureOut' => "none"
         );
@@ -36,11 +36,13 @@ return function (App $app) {
         $run->evaluate();
         if($run->getterCount()) {
             $data_history = $run->getterResult();
-            $time['temperatureIn'] = $data_history->F_temperature_in;
-            $time['temperatureOut'] = $data_history->F_temperature_out;
+            $temperature['temperatureIn'] = $data_history->F_temperature_in != null ?
+                $data_history->F_temperature_in : $temperature['temperatureIn'];
+            $temperature['temperatureOut'] = $data_history->F_temperature_out != null ?
+                $data_history->F_temperature_out : $temperature['temperatureOut'];
         }
 
-        $response->getBody()->write(json_encode($time));
+        $response->getBody()->write(json_encode($temperature));
         return $response
             ->withHeader('content-type', 'application/json')
             ->withStatus(200);
