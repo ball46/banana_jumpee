@@ -48,12 +48,11 @@ return function (App $app) {
             $dateD = ltrim($dateD, '0');
             $status = "none";
 
-            $sql = "SELECT F_work FROM faceid WHERE F_date = '$dateYMD' AND F_in_out = '1' 
-                        AND F_member_id = '$member_id'";
+            $sql = "SELECT * FROM faceid WHERE F_date = '$dateYMD' AND F_member_id = '$member_id'";
             $run = new Get($sql, $response);
             $run->evaluate();
             if ($run->getterCount()) {
-                $work = ($run->getterResult())->F_work;
+                $work = ($run->getterResult())->F_status_in;
                 $status = $work == "absent" ? "absent" : ($work == "late" ? "late" : "normal");
             }
 

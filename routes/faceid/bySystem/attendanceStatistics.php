@@ -39,7 +39,7 @@ return function (App $app) {
 
             $array_data_face = $run->getterResult();
             foreach ($array_data_face as $data_face){
-                $work = $data_face->F_work;
+                $work = $data_face->F_status_in;
                 if($work == "absent"){
                     $absent++;
                 }else if($work == "late"){

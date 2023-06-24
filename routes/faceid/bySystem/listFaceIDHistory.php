@@ -45,12 +45,12 @@ return function (App $app) {
 
                 $send[] = array(
                     'date_face_scan' => $date_face_scan,
-                    'start_work' => $data->F_start_work,
-                    'start_status' => $data->F_start_status,
-                    'start_temperature' => $data->F_start_temperature,
-                    'end_work' => $data->F_end_work,
-                    'end_status' => $data->F_end_status,
-                    'end_temperature' => $data->F_end_temperature,
+                    'time_in' => $data->F_time_in,
+                    'status_in' => $data->F_status_in,
+                    'temperature_in' => $data->F_temperature_in,
+                    'time_out' => $data->F_time_out,
+                    'status_out' => $data->F_status_out,
+                    'temperature_out' => $data->F_temperature_out,
                 );
             }
             $response->getBody()->write(json_encode($send));

@@ -10,7 +10,7 @@ return function (App $app) {
         $current_timestamp = time();
         $now_date = date("Y-m-d", $current_timestamp);
 
-        $sql = "SELECT * FROM faceid WHERE F_date = '$now_date' AND F_in_out = '1'";
+        $sql = "SELECT * FROM faceid WHERE F_date = '$now_date'";
         $run = new GetAll($sql, $response);
         $run->evaluate();
         $all = $run->getterCount();
@@ -20,9 +20,9 @@ return function (App $app) {
         if($all){
             $data_current_date = $run->getterResult();
             foreach ($data_current_date as $data){
-                if($data->F_work == "normal" || $data->F_work == "normal_leave" || $data->F_work == "OT"){
+                if($data->F_status_in == "normal" || $data->F_status_in == "normal_leave" || $data->F_status_in == "OT"){
                     $normal++;
-                }else if($data->F_work == "late"){
+                }else if($data->F_status_in == "late"){
                     $late++;
                 }else{
                     $absent++;

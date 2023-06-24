@@ -32,17 +32,12 @@ return function (App $app) {
         );
 
         $sql = "SELECT * FROM faceid WHERE F_member_id = '$member_id' AND F_date = '$now_date'";
-        $run = new GetAll($sql, $response);
+        $run = new Get($sql, $response);
         $run->evaluate();
         if($run->getterCount()) {
             $data_history = $run->getterResult();
-            foreach ($data_history as $data){
-                if($data->F_in_out){
-                    $time['temperatureIn'] = $data->F_temperature;
-                }else{
-                    $time['temperatureOut'] = $data->F_temperature;
-                }
-            }
+            $time['temperatureIn'] = $data_history->F_temperature_in;
+            $time['temperatureOut'] = $data_history->F_temperature_out;
         }
 
         $response->getBody()->write(json_encode($time));

@@ -30,6 +30,12 @@ return function (App $app) {
                 DATE(F_date) BETWEEN '$start_date' AND '$end_date'";
         $run = new GetAll($sql, $response);
         $run->evaluate();
+        if(!$run->getterCount()){
+            $response->getBody()->write(json_encode("You not have data face scan."));
+            return $response
+                ->withHeader('content-type', 'application/json')
+                ->withStatus(404);
+        }
         $array_data_face_id = $run->getterResult();
 
         $send = [];
@@ -46,13 +52,12 @@ return function (App $app) {
                 'year' => $year,
                 'month' => $month,
                 'day' => $day,
-                'time' => $data_face_id->F_time,
             );
 
             $send[] = array(
                 'date' => $data_date,
-                'time' => $data_face_id->F_time,
-                'temperature' => $data_face_id->F_temperature,
+                'time' => $data_face_id->F_time_in,
+                'temperature' => $data_face_id->F_temperature_in,
             );
         }
 
