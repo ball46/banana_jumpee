@@ -29,8 +29,8 @@ return function (App $app) {
         $absent = 0;
 
 
-        $sql = "SELECT * FROM faceid WHERE F_member_id = '$member_id' AND F_work = 'absent'
-                        AND F_in_out = '1' AND YEAR(F_date) = '$now_year'";
+        $sql = "SELECT * FROM faceid WHERE F_member_id = '$member_id' AND F_status_in = 'absent' 
+                AND YEAR(F_date) = '$now_year'";
         $run = new GetAll($sql, $response);
         if ($run->getterCount()) {
             $run->evaluate();
