@@ -53,13 +53,16 @@ return function (App $app) {
                 if ($run->getterCount()) {
                     $data_vacation = $run->getterResult();
                     foreach ($data_vacation as $vacation) {
+                        $type_leave = $vacation->V_sick_leave ? "sick" : "business";
+                        $use_special_leave = (bool)$vacation->V_special_leave;
                         $send_data[] = array(
                             'vid' => $vacation->V_id,
                             'vacation' => $vacation->V_title,
-                            'type' => $type,
+                            'type' => $type_leave,
+                            'use_special_or_not' => $use_special_leave,
+                            'special_day' => $use_special_leave ? $data->V_count_day : 0,
                             'start_date' => $vacation->V_start_date,
                             'end_date' => $vacation->V_end_date,
-                            'special_day' => $type == "special" ? $data->V_count_day : 0,
                             'allow' => $max_count - $vacation->V_count_allow,
                             'max_count' => $max_count
                         );
