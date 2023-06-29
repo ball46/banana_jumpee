@@ -59,6 +59,7 @@ return function (App $app) {
                             'type' => $type,
                             'start_date' => $vacation->V_start_date,
                             'end_date' => $vacation->V_end_date,
+                            'special_day' => $type == "special" ? $data->V_count_day : 0,
                             'allow' => $max_count - $vacation->V_count_allow,
                             'max_count' => $max_count
                         );
