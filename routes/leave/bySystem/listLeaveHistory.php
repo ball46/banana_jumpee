@@ -29,7 +29,7 @@ return function (App $app) {
         $send = [];
 
         $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id' ORDER BY V_id DESC 
-                    LIMIT $limit OFFSET $offset";
+                LIMIT $limit OFFSET $offset";
         $run = new GetAll($sql, $response);
         $run->evaluate();
         if ($run->getterCount()) {

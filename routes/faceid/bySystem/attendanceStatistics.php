@@ -50,7 +50,7 @@ return function (App $app) {
             }
 
             $send = array(
-                'num_of_month' => ltrim($now_month, '0'),
+                'num_of_month' => (int) ltrim($now_month, '0'),
                 'date_of_entry' => $date_of_entry,
                 'normal' => $normal,
                 'late' => $late,
