@@ -73,6 +73,7 @@ return function (App $app) {
             }
 
             $data_date[] = array(
+                'YMD' => $dateYMD,
                 'year' => $dateY,
                 'month' => $dateM,
                 'day' => $dateD,

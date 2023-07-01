@@ -23,6 +23,11 @@ return function (App $app) {
     $routes = require __DIR__ . '/countHistoryFaceID.php';
     $routes($app);
 
+    //to get data late user in select date
+    $routes = require __DIR__ . '/detailInDate.php';
+    $routes($app);
+
+
     //get history data time and temperature
     $routes = require __DIR__ . '/historyTimeTemp.php';
     $routes($app);
