@@ -28,6 +28,11 @@ return function (App $app) {
 
         $send = [];
 
+        $sql = "SELECT * FROM faceid WHERE F_member_id = $member_id";
+        $run = new Get($sql, $response);
+        $run->evaluate();
+        $first_day_to_work = ($run->getterResult())->F_date;
+
         $sql = "SELECT * FROM faceid WHERE F_member_id = '$member_id' ORDER BY F_id DESC 
                     LIMIT $limit OFFSET $offset";
         $run = new GetAll($sql, $response);
@@ -53,7 +58,11 @@ return function (App $app) {
                     'temperature_out' => $data->F_temperature_out,
                 );
             }
-            $response->getBody()->write(json_encode($send));
+            $send_data = array(
+                'first_day_to_work' =>$first_day_to_work,
+                'data' => $send
+            );
+            $response->getBody()->write(json_encode($send_data));
             return $response
                 ->withHeader('content-type', 'application/json')
                 ->withStatus(200);
