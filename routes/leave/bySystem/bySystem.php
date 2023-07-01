@@ -11,6 +11,10 @@ return function (App $app) {
     $routes = require __DIR__ . '/dataLeave.php';
     $routes($app);
 
+    //call get list leave is not success approved
+    $routes = require __DIR__ . '/listAskToLeave.php';
+    $routes($app);
+
     //call get list history leave
     $routes = require __DIR__ . '/listLeaveHistory.php';
     $routes($app);

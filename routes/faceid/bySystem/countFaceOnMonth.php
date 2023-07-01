@@ -47,7 +47,6 @@ return function (App $app) {
             $dateD = $date->format('d');
             $dateD = ltrim($dateD, '0');
             $status = "none";
-            $leave_title = "";
 
             //to get late data user in select day
             $data_late = [];
@@ -88,6 +87,7 @@ return function (App $app) {
 
                     $data_late[] = array(
                         "image_name" => $image_name,
+                        "display_name" => $data_member->M_display_name,
                         "first_name" => $data_member->M_first_name,
                         "time_in_member" => $data->F_time_in,
                         "different_time" => $different_time
@@ -130,16 +130,13 @@ return function (App $app) {
 
                     $data_leave[] = array(
                         "image_name" => $image_name,
+                        "display_name" => $data_member->M_display_name,
                         "first_name" => $data_member->M_first_name,
                         "type" => $type,
                         "use_special" => $special,
                         "title" => $data->V_title,
-                        "time period" => $data->V_time_period
+                        "time_period" => $data->V_time_period
                     );
-
-                    if($data->V_member_id == $member_id){
-                        $leave_title = $data->V_title;
-                    }
                 }
             }
 
@@ -151,7 +148,6 @@ return function (App $app) {
                 'holiday' => $holiday_name,
                 'member_late' => $data_late,
                 'member_leave' => $data_leave,
-                'leave' => $leave_title,
             );
         }
 
