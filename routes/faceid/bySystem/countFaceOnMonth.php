@@ -47,6 +47,53 @@ return function (App $app) {
             $dateD = $date->format('d');
             $dateD = ltrim($dateD, '0');
             $status = "none";
+            $leave_title = "";
+
+            //to get late data user in select day
+            $data_late = [];
+            $sql = "SELECT * FROM faceid WHERE F_date = '$dateYMD' AND F_status_in = 'late'";
+            $run = new GetAll($sql, $response);
+            $run->evaluate();
+            if($run->getterCount()){
+                $data_face = $run->getterResult();
+                foreach ($data_face as $data){
+                    $sql = "SELECT * FROM member WHERE M_id = $data->F_member_id";
+                    $run = new Get($sql, $response);
+                    $run->evaluate();
+                    $data_member = $run->getterResult();
+
+                    $sql = "SELECT * FROM memberimage WHERE  MI_member_id = $data_member->M_id";
+                    $run = new Get($sql, $response);
+                    $run->evaluate();
+                    $image_name = ($run->getterResult())->MI_image_name;
+
+                    $sql = "SELECT * FROM datework WHERE D_member_id = $data->F_member_id 
+                        AND '$dateYMD' BETWEEN D_start_date_work AND D_end_date_work";
+                    $run = new Get($sql, $response);
+                    $run->evaluate();
+                    if($run->getterCount()){
+                        $data_profiling = $run->getterResult();
+                        $time_in_system = DateTime::createFromFormat('H:i:s', $data_profiling->D_start_time_work);
+                    }else {
+                        $sql = "SELECT * FROM role WHERE R_id = $data_member->M_role_id";
+                        $run = new Get($sql, $response);
+                        $run->evaluate();
+                        $data_role = $run->getterResult();
+
+                        $time_in_system = DateTime::createFromFormat('H:i:s', $data_role->R_start_work);
+                    }
+                    $time_in_user = DateTime::createFromFormat('H:i:s', $data->F_time_in);
+                    $interval = $time_in_user->diff($time_in_system);
+                    $different_time = $interval->format('%H:%i:%s');
+
+                    $data_late[] = array(
+                        "image_name" => $image_name,
+                        "first_name" => $data_member->M_first_name,
+                        "time_in_member" => $data->F_time_in,
+                        "different_time" => $different_time
+                    );
+                }
+            }
 
             $sql = "SELECT * FROM faceid WHERE F_date = '$dateYMD' AND F_member_id = '$member_id'";
             $run = new Get($sql, $response);
@@ -61,26 +108,50 @@ return function (App $app) {
             $run->evaluate();
             $holiday_name = $run->getterCount() ? ($run->getterResult())->H_name : "";
 
+            //to get leave data user in select day
+            $data_leave = [];
             $sql = "SELECT * FROM vacation WHERE '$dateYMD' BETWEEN V_start_date AND V_end_date";
-            $run = new Get($sql, $response);
+            $run = new GetAll($sql, $response);
             $run->evaluate();
             if ($run->getterCount()) {
                 $data_vacation = $run->getterResult();
-                $vacation_name = $data_vacation->V_title;
-            } else {
-                $data_vacation = "";
-                $vacation_name = "";
+                foreach ($data_vacation as $data){
+                    $type = $data->V_sick_leave ? 'sick' : 'business';
+                    $special = (bool)$data->V_special_leave;
+                    $sql = "SELECT * FROM member WHERE M_id = $data->V_member_id";
+                    $run = new Get($sql, $response);
+                    $run->evaluate();
+                    $data_member = $run->getterResult();
+
+                    $sql = "SELECT * FROM memberimage WHERE  MI_member_id = $data_member->M_id";
+                    $run = new Get($sql, $response);
+                    $run->evaluate();
+                    $image_name = ($run->getterResult())->MI_image_name;
+
+                    $data_leave[] = array(
+                        "image_name" => $image_name,
+                        "first_name" => $data_member->M_first_name,
+                        "type" => $type,
+                        "use_special" => $special,
+                        "title" => $data->V_title,
+                        "time period" => $data->V_time_period
+                    );
+
+                    if($data->V_member_id == $member_id){
+                        $leave_title = $data->V_title;
+                    }
+                }
             }
 
             $data_date[] = array(
-                'YMD' => $dateYMD,
                 'year' => $dateY,
                 'month' => $dateM,
                 'day' => $dateD,
                 'status' => $status,
                 'holiday' => $holiday_name,
-                'leave' => $vacation_name,
-                'leave_data' => $data_vacation
+                'member_late' => $data_late,
+                'member_leave' => $data_leave,
+                'leave' => $leave_title,
             );
         }
 
