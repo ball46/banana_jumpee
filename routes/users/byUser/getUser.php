@@ -11,6 +11,10 @@ return function (App $app) {
         $email = $data->email;
         $password = $data->password;
 
+        date_default_timezone_set('Asia/Bangkok');
+        $current_timestamp = time();
+        $now_date = date("Y-m-d", $current_timestamp);
+
         $sql = "SELECT * FROM member WHERE M_email = '$email'";
         $run = new Get($sql, $response);
         $run->evaluate();
@@ -23,6 +27,32 @@ return function (App $app) {
         $result = $run->getterResult();
 
         if ($result->M_status == 1) {
+            $leave_data = [];
+            $sql = "SELECT * FROM vacation WHERE V_status = 1 AND V_count_allow = 0
+                    AND V_start_date >= '$now_date' LIMIT 3";
+            $run = new GetAll($sql, $response);
+            $run->evaluate();
+            if ($run->getterCount()) {
+                $data_leave = $run->getterResult();
+                foreach ($data_leave as $data) {
+                    $sql = "SELECT * FROM member WHERE M_id = $data->V_member_id";
+                    $run = new Get($sql, $response);
+                    $run->evaluate();
+                    $data_member = $run->getterResult();
+
+                    $date = explode("-", $data->V_start_date);
+                    $data_date = array(
+                        'day' => (int) ltrim($date[2], '0'),
+                        'month' => (int) ltrim($date[1], '0')
+                    );
+
+                    $leave_data[] = array(
+                        'date' => $data_date,
+                        'type_leave' => $data->V_sick_leave ? "sick" : "business",
+                        'name' => $data_member->M_display_name
+                    );
+                }
+            }
 
             $sql = "SELECT * FROM memberimage WHERE  MI_member_id = $result->M_id";
             $run = new Get($sql, $response);
@@ -41,6 +71,7 @@ return function (App $app) {
                 "admin" => $result->M_admin == 1,
                 "username" => $result->M_username,
                 "display_name" => $result->M_display_name,
+                "navbar" => $leave_data
             );
 
             date_default_timezone_set('Asia/Bangkok');
