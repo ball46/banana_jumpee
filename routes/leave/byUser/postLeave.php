@@ -40,6 +40,7 @@ return function (App $app) {
         date_default_timezone_set('Asia/Bangkok');
         $current_timestamp = time();
         $now_date = date("Y-m-d", $current_timestamp);
+        $now_year = date("Y", $current_timestamp);
 
         $start = new DateTime($start_date);
         $end = new DateTime($end_date);
@@ -58,7 +59,7 @@ return function (App $app) {
         $can_leave = 1;
         $type = "";
 
-        $sql = "SELECT * FROM member WHERE M_id = '$member_id'";
+        $sql = "SELECT * FROM member WHERE M_id = $member_id";
         $run = new Get($sql, $response);
         $run->evaluate();
         $data_member = $run->getterResult();
@@ -79,10 +80,6 @@ return function (App $app) {
                 ->withStatus(403);
         }
 
-        date_default_timezone_set('Asia/Bangkok');
-        $current_timestamp = time();
-        $now_year = date("Y", $current_timestamp);
-
         $sql = "SELECT * FROM countleave WHERE C_member_id = '$member_id' AND C_year = '$now_year'";
         $run = new Get($sql, $response);
         $run->evaluate();
@@ -101,15 +98,15 @@ return function (App $app) {
             if ($special_leave) {
                 if ($special >= $day) {
                     $special -= $day;
-                    $sql_leave = "UPDATE countleave SET C_special_leave = '$special' WHERE C_id = '$id'";
-                    $type = "special";
+                    $sql_leave = "UPDATE countleave SET C_special_leave = $special WHERE C_id = $id";
+                    $type = $sick_leave ?  "sick" : "business";
                 } else {
                     $can_leave = 0;
                 }
             } else if ($sick_leave) {
                 if ($sick >= $day) {
                     $sick -= $day;
-                    $sql_leave = "UPDATE countleave SET C_sick_leave = '$sick' WHERE C_id = '$id'";
+                    $sql_leave = "UPDATE countleave SET C_sick_leave = $sick WHERE C_id = $id";
                     $type = "sick";
                 } else {
                     $can_leave = 0;
@@ -117,22 +114,22 @@ return function (App $app) {
             } else {
                 if ($business >= $day) {
                     $business -= $day;
-                    $sql_leave = "UPDATE countleave SET C_business_leave = '$business' WHERE C_id = '$id'";
+                    $sql_leave = "UPDATE countleave SET C_business_leave = $business WHERE C_id = $id";
                     $type = "business";
                 } else {
                     $can_leave = 0;
                 }
             }
-        }//in this case is create
+        }//in this case is create new row count leave
         else {
-            $sql = "SELECT * FROM countleave WHERE C_member_id = '$member_id' AND C_status = '1'";
+            $sql = "SELECT * FROM countleave WHERE C_member_id = $member_id AND C_status = 1";
             $run = new Get($sql, $response);
             $run->evaluate();
             $old_special_leave = 0.0;
             if ($run->getterCount()) {
                 $data_leave = $run->getterResult();
                 $old_special_leave = $data_leave->C_special_leave;
-                $sql_status = "UPDATE countleave SET C_status = '0' WHERE C_id = '$data_leave->C_id'";
+                $sql_status = "UPDATE countleave SET C_status = 0 WHERE C_id = $data_leave->C_id";
                 $change = 1;
             }
 
@@ -143,7 +140,7 @@ return function (App $app) {
                                     C_max_special_leave, C_year) 
                                     VALUES ('$member_id', '$max_business', '$max_sick', '$special', '$max_special', 
                                     '$now_year')";
-                    $type = "special";
+                    $type = $sick_leave ?  "sick" : "business";
                 } else {
                     $can_leave = 0;
                 }
@@ -173,7 +170,7 @@ return function (App $app) {
         }
 
         if ($can_leave) {
-            $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_id' AND V_status = '1'";
+            $sql = "SELECT * FROM vacation WHERE V_member_id = $member_id AND V_status = 1";
             $run = new GetAll($sql, $response);
             $run->evaluate();
             if ($run->getterCount() != 0) {
@@ -194,16 +191,14 @@ return function (App $app) {
             $run->evaluate();
             $data_allow = $run->getterResult();
 
-            $sql = "SELECT * FROM memberallow WHERE SM_member_applicant_id = '$member_id' AND SM_type_leave = '$type'";
+            $sql = "SELECT * FROM memberallow WHERE MA_type_leave = '$type'";
             $run = new GetAll($sql, $response);
             $run->evaluate();
 
             $allow_count = 0;
 
             if($run->getterCount() > 0){
-                if($special_leave){
-                    $allow_count = $data_allow->A_special;
-                }else if($sick_leave){
+                if($type == "sick"){
                     $allow_count = $data_allow->A_sick;
                 }else{
                     $allow_count = $data_allow->A_business;
@@ -218,11 +213,11 @@ return function (App $app) {
             if($can_leave){
                 $data_member_allow = $run->getterResult();
                 foreach($data_member_allow as $data){
-                    $member = $member . $data->SM_member_approve_id . " ";
+                    $member = $member . $data->MA_member_id . " ";
                 }
             }else{
-                $response->getBody()->write(json_encode("your member allow in " . $type .
-                    " type leave is not enough"));
+                $response->getBody()->write(json_encode("member allow in " . $type .
+                    " type leave is not enough, please inform the admin."));
                 return $response
                     ->withHeader('content-type', 'application/json')
                     ->withStatus(403);

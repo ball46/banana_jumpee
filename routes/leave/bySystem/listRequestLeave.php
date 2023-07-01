@@ -24,14 +24,13 @@ return function (App $app) {
 
         $send_data = [];
 
-        $sql = "SELECT * FROM memberallow WHERE SM_member_approve_id = '$member_id'";
+        $sql = "SELECT * FROM memberallow WHERE MA_member_id = '$member_id'";
         $run = new GetAll($sql, $response);
         $run->evaluate();
         if ($run->getterCount()) {
             $data_allow = $run->getterResult();
             foreach ($data_allow as $data) {
-                $member_applicant_id = $data->SM_member_applicant_id;
-                $type = $data->SM_type_leave;
+                $type = $data->MA_type_leave;
 
                 $sql = "SELECT * FROM allowcount";
                 $run = new Get($sql, $response);
@@ -40,25 +39,26 @@ return function (App $app) {
 
                 if ($type == "business") {
                     $max_count = $data_count->A_business;
+                    $sick_leave = 0;
                 } else if ($type == "sick") {
                     $max_count = $data_count->A_sick;
+                    $sick_leave = 1;
                 } else {
-                    $max_count = $data_count->A_special;
+                    continue;
                 }
 
-                $sql = "SELECT * FROM vacation WHERE V_member_id = '$member_applicant_id' AND V_status = '1'
+                $sql = "SELECT * FROM vacation WHERE V_sick_leave = $sick_leave AND V_status = 1
                         AND FIND_IN_SET('$member_id', REPLACE(V_wait, ' ', ',')) > 0";
                 $run = new GetAll($sql, $response);
                 $run->evaluate();
                 if ($run->getterCount()) {
                     $data_vacation = $run->getterResult();
                     foreach ($data_vacation as $vacation) {
-                        $type_leave = $vacation->V_sick_leave ? "sick" : "business";
                         $use_special_leave = (bool)$vacation->V_special_leave;
                         $send_data[] = array(
                             'vid' => $vacation->V_id,
                             'vacation' => $vacation->V_title,
-                            'type' => $type_leave,
+                            'type' => $type,
                             'use_special_or_not' => $use_special_leave,
                             'special_day' => $use_special_leave ? $data->V_count_day : 0,
                             'start_date' => $vacation->V_start_date,

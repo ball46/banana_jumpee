@@ -10,11 +10,11 @@ return function (App $app) {
         $array_member_allow_id = $data->member_allow_id;
         $string_member_allow = "";
         foreach ($array_member_allow_id as $member_allow_id) {
-            $sql = "SELECT * FROM memberallow WHERE SM_id = $member_allow_id";
+            $sql = "SELECT * FROM memberallow WHERE MA_id = $member_allow_id";
             $run = new Get($sql, $response);
             $run->evaluate();
             $data_allow = $run->getterResult();
-            $string_member_allow = $string_member_allow . $data_allow->SM_member_approve_id . ", ";
+            $string_member_allow = $string_member_allow . $data_allow->MA_member_id . ", ";
         }
         $string_member_allow = substr($string_member_allow, 0, -2);
 

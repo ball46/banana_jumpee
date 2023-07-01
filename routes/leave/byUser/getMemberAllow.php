@@ -20,7 +20,12 @@ return function (App $app){
                 ->withHeader('content-type', 'application/json')
                 ->withStatus(401);
         }
-        $member_id = $token->id;
+        if(!$token->admin) {
+            $response->getBody()->write(json_encode("You are not admin"));
+            return $response
+                ->withHeader('content-type', 'application/json')
+                ->withStatus(403);
+        }
 
         $data_business = [];
         $data_sick = [];
@@ -30,13 +35,13 @@ return function (App $app){
         $sick_allow_id = [];
         $special_allow_id = [];
 
-        $sql = "SELECT * FROM memberallow WHERE SM_member_applicant_id = '$member_id'";
+        $sql = "SELECT * FROM memberallow";
         $run = new GetAll($sql, $response);
         $run->evaluate();
         if($run->getterCount()){
             $array_member_allow = $run->getterResult();
             foreach ($array_member_allow as $member_allow){
-                $sql = "SELECT * FROM member WHERE M_id = '$member_allow->SM_member_approve_id'";
+                $sql = "SELECT * FROM member WHERE M_id = '$member_allow->MA_member_id'";
                 $run = new Get($sql, $response);
                 $run->evaluate();
                 $data_member_allow = $run->getterResult();
@@ -47,21 +52,21 @@ return function (App $app){
                 $image_name = ($run->getterResult())->MI_image_name;
 
                 $data_send = array(
-                    "member_allow_id" => $member_allow->SM_id,
+                    "member_allow_id" => $member_allow->MA_id,
                     "image_name" => $image_name,
                     "username" => $data_member_allow->M_username,
                     "display_name" => $data_member_allow->M_display_name,
                 );
 
-                if($member_allow->SM_type_leave == "business"){
+                if($member_allow->MA_type_leave == "business"){
                     $data_business[] = $data_send;
-                    $business_allow_id[] = $member_allow->SM_id;
-                }else if($member_allow->SM_type_leave == "sick"){
+                    $business_allow_id[] = $member_allow->MA_id;
+                }else if($member_allow->MA_type_leave == "sick"){
                     $data_sick[] = $data_send;
-                    $sick_allow_id[] = $member_allow->SM_id;
+                    $sick_allow_id[] = $member_allow->MA_id;
                 }else{
                     $data_special[] = $data_send;
-                    $special_allow_id[] = $member_allow->SM_id;
+                    $special_allow_id[] = $member_allow->MA_id;
                 }
             }
 

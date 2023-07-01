@@ -36,6 +36,7 @@ return function (App $app) {
             $data_leave = $run->getterResult();
             foreach ($data_leave as $data) {
                 $date = $data->V_date_ask_to_leave;
+                $use_special_leave = (bool)$data->V_special_leave;
                 $date = explode("-", $date);
                 $date_ask_to_leave = array(
                     'year' => $date[0],
@@ -48,15 +49,12 @@ return function (App $app) {
                 $run->evaluate();
                 $data_count = $run->getterResult();
 
-                if ($data->V_special_leave) {
-                    $type = "special";
-                    $max_count = $data_count->A_business;
-                } else if ($data->V_sick_leave) {
+                if ($data->V_sick_leave) {
                     $type = "sick";
                     $max_count = $data_count->A_sick;
                 } else {
                     $type = "business";
-                    $max_count = $data_count->A_special;
+                    $max_count = $data_count->A_business;
                 }
 
                 $send[] = array(
@@ -64,6 +62,7 @@ return function (App $app) {
                     'date_ask_to_leave' => $date_ask_to_leave,
                     'vacation' => $data->V_title,
                     'type' => $type,
+                    'use_special_or_not' => $use_special_leave,
                     'start_date' => $data->V_start_date,
                     'end_date' => $data->V_end_date,
                     'period_time' => $data->V_count_day,
